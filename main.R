@@ -36,10 +36,10 @@ if (!require(rgdal)) install.packages('rgdal')
 if (!require(ranger)) install.packages('ranger')
 
 ## probaV
-if (!require(lubridate)) install.packages('lubridate')
-if (!require(probaV)) install_github('johanez/probaV', dependencies = T)
+#if (!require(lubridate)) install.packages('lubridate')
+#if (!require(probaV)) install_github('johanez/probaV', dependencies = T)
 if (!require(probaV)) install.packages('probaV')
-devtools::install_local("probaV", depend = T) # set WD to the folder location
+#devtools::install_local("probaV", depend = T) # set WD to the folder location
 
 # install_github('johanez/probaV', dependencies = T)
 
@@ -52,10 +52,14 @@ require(devtools)
 require(gdalUtils)
 require(probaV)
 
+# below the fixed link file in order to load the ProbaV package from Johannes
+#source("R/timeVrtProbaV_fix.R")
+
 
 ##
 # set your data path
-data_path <- "/home/pi/PROBA_V"
+#data_path <- "/home/pi/PROBA_V"
+data_path <- getwd()
 
 
 #### ----------- Preprocessing  -------------------------------------------------
@@ -72,7 +76,6 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 QC_val <- getProbaVQClist()$clear_all
 patterns <- c("RADIOMETRY.tif$")
 tiles <- c("X16Y06") #..., "X21Y06")
-tiles <- c("X00Y01") #..., "X21Y06")
 
 df_in <- getProbaVinfo(l0_dir, pattern = patterns[1], tiles = tiles)
 #df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
@@ -93,23 +96,25 @@ df_sm <- getProbaVinfo(file.path(data_path, "rsdata/probav/sm"), pattern = "RED0
 
 #### ----------- Extract ts metrics  ------------------------------------------------------
 # creates vrt stack, apllies cloud filter and erices metrics -> output metrics brick
-# ----- parameters ----#
-tiles <- c("X16Y06")
-tn <- 1
-minrows = 15
-mc.cores = 3
-logfile <- paste0("~/PROBA_V/rsdata/lcafrica/logs/metrics_tmp_", tiles[tn], ".log")
-probav_sm_dir <- file.path(data_path, "rsdata/probav/sm/")
-vrt_name <- file.path(data_path, paste0("rsdata/probav/sm/", tiles[tn], "_",paste0(bands, collapse = "_"), ".vrt"))
-out_name <- file.path(data_path, paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
-rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "text")
-
 # ----- cehck input --- #
 df_probav_sm  <- getProbaVinfo(probav_sm_dir, pattern =  '(BLUE|SWIR|NDVI)_sm.tif$', tiles = tiles[tn])
 glimpse(df_probav_sm)
 
 bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
 dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
+
+# ----- parameters ----#
+tiles <- c("X16Y06")
+tn <- 1
+minrows = 15
+mc.cores = detectCores(all.tests = FALSE, logical = TRUE)-1
+logfile <- paste0("~/PROBA_V/rsdata/lcafrica/logs/metrics_tmp_", tiles[tn], ".log")
+probav_sm_dir <- file.path(data_path, "rsdata/probav/sm/")
+vrt_name <- file.path(data_path, paste0("rsdata/probav/sm/", tiles[tn], "_",paste0(bands, collapse = "_"), ".vrt"))
+out_name <- file.path(data_path, paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
+rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "text")
+
+
 
 # --- buld a vrt ---#
 #(its faster than raster stack!)
@@ -118,7 +123,7 @@ gdalinfo(version = T)
 if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
 } else {
-  b_vrt <- timeVrtProbaV2(x = probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name2, tile = tiles[tn], return_raster = T)
+  b_vrt <- timeVrtProbaV2(x = probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T)
 }
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
