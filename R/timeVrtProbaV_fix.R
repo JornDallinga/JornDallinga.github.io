@@ -26,7 +26,10 @@ timeVrtProbaV2 <- function(x, pattern, stacked_bands=NULL, vrt_name, order_chron
   }
   
   cat("\n building main vrt, layers:", nrow(df_info))
+  # new
   gdalUtils::gdalbuildvrt(paste(x,df_info$fpath, sep = ""), vrt_name, separate = T, overwrite = T, verbose=F)
+  # old (does not work)
+  # gdalUtils::gdalbuildvrt(df_info$fpath, vrt_name, separate = T, overwrite = T, verbose=F)
   
   if(return_raster) {
     b <- brick(vrt_name)
