@@ -54,11 +54,10 @@ require(probaV)
 
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/timeVrtProbaV_fix.R")
+source("R/processProbaVbatch2.R")
+source("R/getHarmMetricsSpatial2.R")
 
 library(tools)
-file_path_as_absolute("rsdata/probav/sm")
-file_path_as_absolute(x[1,"fpath"])
-file_ext(x[1,"fpath"])
 
 ##
 # set your data path
@@ -93,7 +92,7 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns[2], tiles = tiles, start_d = "2015-10-20",
+                    pattern = patterns[1], tiles = tiles, start_d = "2015-10-20",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1), overwrite=F)
 
