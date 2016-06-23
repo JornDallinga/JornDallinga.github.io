@@ -43,21 +43,22 @@ if (!require(probaV)) install.packages('probaV')
 
 # install_github('johanez/probaV', dependencies = T)
 
-require(ranger)
-require(raster)
-require(ggvis)
-require(rgdal)
-require(dplyr)
-require(devtools)
-require(gdalUtils)
-require(probaV)
+library(ranger)
+library(raster)
+library(ggvis)
+library(rgdal)
+library(dplyr)
+library(devtools)
+library(gdalUtils)
+library(probaV)
+library(tools)
 
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/timeVrtProbaV_fix.R")
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial2.R")
 
-library(tools)
+
 
 ##
 # set your data path
@@ -79,10 +80,10 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ## ---- clean data ---- #
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
-patterns <- c("NDVI.tif$",'RADIOMETRY.tif$') # Radiometry
+patterns <- c('RADIOMETRY.tif$', "NDVI.tif$") # Radiometry, "NDVI.tif$"
 tiles <- c("X18Y02") #..., "X21Y06")
 
-df_in <- getProbaVinfo(l0_dir, pattern = patterns[1], tiles = tiles)
+df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
 df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 nrow(df_in)
 
@@ -92,9 +93,10 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns[1], tiles = tiles, start_d = "2015-10-20",
+                    pattern = patterns[1], tiles = tiles, start_d = "2015-10-22",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1), overwrite=F)
+                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    overwrite=F)
 
 # check result for red
 df_sm <- getProbaVinfo(file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")), pattern = "sm.tif$")
@@ -116,10 +118,16 @@ bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
 dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
 minrows = 15
 mc.cores = detectCores(all.tests = FALSE, logical = TRUE)-1
-logfile <- paste0("~/PROBA_V/rsdata/lcafrica/logs/metrics_tmp_", tiles[tn], ".log")
+#logfile <- paste0("~/PROBA_V/rsdata/lcafrica/logs/metrics_tmp_", tiles[tn], ".log")
+logfile <- file.path(getwd(), paste0("rsdata/probav/logs/", tiles[tn], ".log"))
+
 vrt_name <- file.path(getwd(), paste0("rsdata/probav/sm2/", tiles[tn], "_",paste0(bands, collapse = "_"), ".vrt"))
 out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
-rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "text")
+#rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "window",
+#              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
+
+rasterOptions(todisk = F, progress = "window",
+              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
 
 
 # --- buld a vrt ---#
@@ -130,7 +138,8 @@ if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
 } else {
   b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T)
-  
+  b_vrt2 <- timeStackProbaV(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
+                           quick = FALSE, end_date = NULL)
 }
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
@@ -144,10 +153,11 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
             blockSize(b_vrt, minrows = minrows)$n, mc.cores))
 
 
-b_metrics <- getHarmMetricsSpatial2(b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+b_metrics <- getHarmMetricsSpatial2(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                     overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
                                     cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
-                                    filename = out_name)
+                                    out_name = out_name,
+                                    probav_sm_dir = probav_sm_dir)
 
 
 print(b_metrics)
