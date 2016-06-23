@@ -1,7 +1,8 @@
 getHarmMetricsSpatial2 <- function(x, n_years=NULL, order=2, robust=FALSE,
-                                   cf_bands, thresholds=c(-80, Inf, -120, 120) , span=0.3, scale_f=NULL, minrows=1, mc.cores=1, logfile, ...) {
+                                   cf_bands, thresholds=c(-80, Inf, -120, 120) , span=0.3, scale_f=NULL, minrows=1, mc.cores=1, logfile, probav_sm_dir = probav_sm_dir,out_name,...) {
   
-  s_info <- getProbaVinfo('/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/', pattern = '_sm.vrt$', tiles = NULL)
+  #ss <- file.path('/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2', names(x))
+  s_info <- getProbaVinfo(probav_sm_dir, pattern =  '_sm.tif$', tiles = tiles[tn])
   #s_info <- getProbaVinfo(names(x))
   bands <- s_info[s_info$date == s_info$date[1], 'band']
   dates <- s_info[s_info$band == bands[1], 'date']
@@ -54,7 +55,7 @@ getHarmMetricsSpatial2 <- function(x, n_years=NULL, order=2, robust=FALSE,
   }
   
   # use mcCalc ratehr than mc.calc (controll minrows)
-  out <- mcCalc(x=x, fun=fun, minrows = minrows, mc.cores = mc.cores, logfile=logfile, ...)
+  out <- mcCalc(x=x, fun=fun, minrows = minrows, mc.cores = mc.cores, logfile=logfile, out_name = out_name)
   
   return(out)
 }
