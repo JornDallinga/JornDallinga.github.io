@@ -55,6 +55,7 @@ library(tools)
 
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/timeVrtProbaV_fix.R")
+source("R/timeStackProbaV2.R")
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial2.R")
 
@@ -63,8 +64,8 @@ source("R/getHarmMetricsSpatial2.R")
 ##
 # set your data path
 data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
-data_path <- getwd()
-getwd()
+#data_path <- getwd()
+#getwd()
 
 #### ----------- Preprocessing  -------------------------------------------------
 ## ---- check  downloaded data
@@ -80,7 +81,7 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ## ---- clean data ---- #
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
-patterns <- c('RADIOMETRY.tif$', "NDVI.tif$") # Radiometry, "NDVI.tif$"
+patterns <- c('RADIOMETRY.tif$') # Radiometry, "NDVI.tif$"
 tiles <- c("X18Y02") #..., "X21Y06")
 
 df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
@@ -93,7 +94,7 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns[1], tiles = tiles, start_d = "2015-10-22",
+                    pattern = patterns[1], tiles = tiles, start_d = "2015-10-10",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
@@ -126,7 +127,7 @@ out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_
 #rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "window",
 #              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
 
-rasterOptions(todisk = F, progress = "window",
+rasterOptions(todisk = F, progress = "text",
               tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
 
 
@@ -134,12 +135,21 @@ rasterOptions(todisk = F, progress = "window",
 #(its faster than raster stack!)
 gdalinfo(version = T)
 
+# temp idea to reduce extent
+plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151011_100M_V001_BLUE_sm.tif)
+ext <- drawExtent()
+cr <- crop(x = b_vrt, y = ext)
+b_vrt <- cr
+plot(b_vrt)
+
+# virtual raster
+
 if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
 } else {
   b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T)
-  b_vrt2 <- timeStackProbaV(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
-                           quick = FALSE, end_date = NULL)
+  #b_vrt2 <- timeStackProbaV2(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
+   #                        quick = FALSE, end_date = NULL)
 }
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
@@ -161,6 +171,7 @@ b_metrics <- getHarmMetricsSpatial2(x = b_vrt, minrows = minrows, mc.cores = mc.
 
 
 print(b_metrics)
+plot(b_metrics)
 
 # not that at thsi poitn you coudl extract spatial metrics
 # from the temporal metrics brick using the python scripts.
