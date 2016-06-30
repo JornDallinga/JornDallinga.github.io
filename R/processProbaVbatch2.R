@@ -44,7 +44,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   } else registerDoSEQ()
   
   xprocessed <- foreach(i=x, o=outnames, .combine = c, .multicombine = T, .inorder = F, .packages = c("raster", "rgdal"), .verbose = T ) %dopar% {
-    #cat("...out:", o)
+    cat("...out:", o)
     r <- cleanProbaV(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is )
     print(r)
     o
