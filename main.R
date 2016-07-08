@@ -54,7 +54,7 @@ library(probaV)
 library(tools)
 
 # below the fixed link file in order to load the ProbaV package from Johannes
-source("R/timeVrtProbaV_fix.R")
+source("R/timeVrtProbaV2.R")
 source("R/timeStackProbaV2.R")
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial2.R")
@@ -81,7 +81,8 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ## ---- clean data ---- #
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
-patterns <- c('RADIOMETRY.tif$') # Radiometry, "NDVI.tif$"
+patterns <- c('RADIOMETRY.tif$', 'NDVI.tif$') # Radiometry, "NDVI.tif$"
+#patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
 df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
@@ -93,11 +94,20 @@ detectCores(all.tests = FALSE, logical = TRUE)
 # parallel with foreach
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
-processProbaVbatch2(l0_dir, 
-                    pattern = patterns[1], tiles = tiles, start_d = "2015-10-10",
-                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
-                    overwrite=F)
+for (i in 1:length(patterns)){
+  processProbaVbatch2(l0_dir, 
+                      pattern = patterns[i], tiles = tiles, start_d = "2015-10-25",
+                      QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                      ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                      overwrite=F)
+}
+
+
+lapply(1:length(patterns),FUN = function(i)   processProbaVbatch2(l0_dir, 
+                                                                  pattern = patterns[i], tiles = tiles, start_d = "2015-10-25",
+                                                                  QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                                                                  ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                                                                  overwrite=F))
 
 # check result for red
 df_sm <- getProbaVinfo(file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")), pattern = "sm.tif$")
@@ -136,7 +146,7 @@ rasterOptions(todisk = F, progress = "text",
 gdalinfo(version = T)
 
 # temp idea to reduce extent
-plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151011_100M_V001_BLUE_sm.tif)
+plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151026_100M_V001_BLUE_sm.tif)
 ext <- drawExtent()
 cr <- crop(x = b_vrt, y = ext)
 b_vrt <- cr
@@ -146,10 +156,13 @@ plot(b_vrt)
 
 if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = NULL, end_date = "2015-10-15")
 } else {
-  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T)
+  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T, start_date = NULL, end_date = "2015-10-15")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = NULL, end_date = "2015-10-15")
+  
   #b_vrt2 <- timeStackProbaV2(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
-   #                        quick = FALSE, end_date = NULL)
+  #                        quick = FALSE, end_date = NULL)
 }
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
@@ -169,6 +182,9 @@ b_metrics <- getHarmMetricsSpatial2(x = b_vrt, minrows = minrows, mc.cores = mc.
                                     out_name = out_name,
                                     probav_sm_dir = probav_sm_dir)
 
+b_metrics2 <- getHarmMetrics(x = b_vrt, QC_good = QC_val)
+t <- smoothLoess(tsx = b_vrt, QC_good = NULL, dates = NULL, threshold = c(-50, Inf),
+                 res_type = "all")
 
 print(b_metrics)
 plot(b_metrics)
