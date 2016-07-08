@@ -1,12 +1,13 @@
 processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL, QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
-  # x <- l0_dir   
+  # x <- l0_dir
+  if (class(pattern) == 'list') pattern <- unlist(pattern)
   if (!is.character(x)) {
     stop('x needs to be of class character')
   }
   
   if(length(x) == 1) {
     
-    info <- getProbaVinfo(x, pattern=patterns)
+    info <- getProbaVinfo(x, pattern=pattern)
     
     # x <- list.files(path=x, pattern=pattern, full.names=TRUE,  recursive = T, include.dirs = F, no.. = T)
   }
@@ -18,7 +19,6 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
     x <- subset(x, x$date >= start_d)
     
   }
-  
   
   x <- paste0(l0_dir,'/',x$fpath)
   
