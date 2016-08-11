@@ -1,4 +1,4 @@
-processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL, QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
+processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL, QC_val = QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
   # x <- l0_dir
   if (class(pattern) == 'list') pattern <- unlist(pattern)
   if (!is.character(x)) {
@@ -29,10 +29,10 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   # for unstacking radiometry image, sm will be in band suffix, for checking we use the red band
   outnames <- gsub("RADIOMETRY_sm\\.tif", "RED0_sm.tif", outnames)
   #x2 <- list.files(outdir, full.names = T)
-  if(!overwrite){
-    x <- x[!file.exists(outnames)]
-    outnames <- outnames[!file.exists(outnames)]
-  }
+  #if(!overwrite){
+  #  x <- x[!file.exists(outnames)]
+  #  outnames <- outnames[!file.exists(outnames)]
+  #}
   outnames <- gsub("_RED0_sm\\.tif", ".tif", outnames)
   
   

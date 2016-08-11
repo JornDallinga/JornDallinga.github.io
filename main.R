@@ -81,7 +81,8 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ## ---- clean data ---- #
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
-patterns <- c('RADIOMETRY.tif$', 'NDVI.tif$') # Radiometry, "NDVI.tif$"
+
+patterns <- c('RADIOMETRY.tif$') # Radiometry, "NDVI.tif$" 'RADIOMETRY.tif$', 
 #patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
@@ -94,20 +95,17 @@ detectCores(all.tests = FALSE, logical = TRUE)
 # parallel with foreach
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
-for (i in 1:length(patterns)){
-  processProbaVbatch2(l0_dir, 
-                      pattern = patterns[i], tiles = tiles, start_d = "2015-10-25",
-                      QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                      ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
-                      overwrite=F)
-}
+processProbaVbatch2(l0_dir, 
+                    pattern = patterns, tiles = tiles, start_d = "2015-10-25",
+                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    overwrite=T)
 
-
-lapply(1:length(patterns),FUN = function(i)   processProbaVbatch2(l0_dir, 
-                                                                  pattern = patterns[i], tiles = tiles, start_d = "2015-10-25",
-                                                                  QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                                                                  ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
-                                                                  overwrite=F))
+# lapply(1:length(patterns),FUN = function(i)   processProbaVbatch2(l0_dir, 
+#                                                                   pattern = patterns[i], tiles = tiles, start_d = "2015-10-25",
+#                                                                   QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+#                                                                   ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+#                                                                   overwrite=F))
 
 # check result for red
 df_sm <- getProbaVinfo(file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")), pattern = "sm.tif$")
@@ -145,25 +143,26 @@ rasterOptions(todisk = F, progress = "text",
 #(its faster than raster stack!)
 gdalinfo(version = T)
 
+
+# virtual raster
+
+if (file.exists(vrt_name)) {
+  b_vrt <- brick(vrt_name)
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = NULL, end_date = "2015-10-26")
+} else {
+  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T, start_date = "2015-10-25", end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-10-25", end_date = "2015-10-26")
+  
+  #b_vrt2 <- timeStackProbaV2(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
+  #                        quick = FALSE, end_date = NULL)
+}
+
 # temp idea to reduce extent
 plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151026_100M_V001_BLUE_sm.tif)
 ext <- drawExtent()
 cr <- crop(x = b_vrt, y = ext)
 b_vrt <- cr
 plot(b_vrt)
-
-# virtual raster
-
-if (file.exists(vrt_name)) {
-  b_vrt <- brick(vrt_name)
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = NULL, end_date = "2015-10-15")
-} else {
-  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T, start_date = NULL, end_date = "2015-10-15")
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = NULL, end_date = "2015-10-15")
-  
-  #b_vrt2 <- timeStackProbaV2(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
-  #                        quick = FALSE, end_date = NULL)
-}
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
 print(b_vrt)
@@ -181,6 +180,7 @@ b_metrics <- getHarmMetricsSpatial2(x = b_vrt, minrows = minrows, mc.cores = mc.
                                     cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
                                     out_name = out_name,
                                     probav_sm_dir = probav_sm_dir)
+
 
 b_metrics2 <- getHarmMetrics(x = b_vrt, QC_good = QC_val)
 t <- smoothLoess(tsx = b_vrt, QC_good = NULL, dates = NULL, threshold = c(-50, Inf),
