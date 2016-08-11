@@ -52,12 +52,15 @@ library(devtools)
 library(gdalUtils)
 library(probaV)
 library(tools)
+library(knitr)
 
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/timeVrtProbaV2.R")
 source("R/timeStackProbaV2.R")
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial2.R")
+source("R/mapDistance2Loess2.R")
+
 
 
 
@@ -82,7 +85,7 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c('RADIOMETRY.tif$') # Radiometry, "NDVI.tif$" 'RADIOMETRY.tif$', 
+patterns <- c("NDVI.tif$") # "NDVI.tif$" 'RADIOMETRY.tif$', 
 #patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
@@ -96,16 +99,10 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_d = "2015-10-25",
+                    pattern = patterns, tiles = tiles, start_d = "2015-08-15",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
-                    overwrite=T)
-
-# lapply(1:length(patterns),FUN = function(i)   processProbaVbatch2(l0_dir, 
-#                                                                   pattern = patterns[i], tiles = tiles, start_d = "2015-10-25",
-#                                                                   QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-#                                                                   ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
-#                                                                   overwrite=F))
+                    overwrite=F)
 
 # check result for red
 df_sm <- getProbaVinfo(file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")), pattern = "sm.tif$")
@@ -148,17 +145,14 @@ gdalinfo(version = T)
 
 if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = NULL, end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2015-08-15", end_date = "2015-10-26")
 } else {
-  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T, start_date = "2015-10-25", end_date = "2015-10-26")
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-10-25", end_date = "2015-10-26")
-  
-  #b_vrt2 <- timeStackProbaV2(x = probav_sm_dir, pattern = '_sm.tif$', order_chrono = TRUE, tile = NULL,
-  #                        quick = FALSE, end_date = NULL)
+  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T, start_date = "2015-08-15", end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-08-15", end_date = "2015-10-26")
 }
 
 # temp idea to reduce extent
-plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151026_100M_V001_BLUE_sm.tif)
+plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151016_100M_V001_BLUE_sm.tif)
 ext <- drawExtent()
 cr <- crop(x = b_vrt, y = ext)
 b_vrt <- cr
@@ -175,16 +169,33 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
             blockSize(b_vrt, minrows = minrows)$n, mc.cores))
 
 
-b_metrics <- getHarmMetricsSpatial2(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+
+ts <- smoothLoess2(1, QC_good=NULL, dates=NULL, threshold=c(-50, Inf), res_type=c("filled"))
+
+t <- mapDistance2Loess2(b_vrt, QC_band = c(1,3), span = 0.3, res_type = c("distance"), mc.cores = 3)
+
+
+
+b_metrics <- getHarmMetricsSpatial2(b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                     overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
-                                    cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
-                                    out_name = out_name,
-                                    probav_sm_dir = probav_sm_dir)
+                                    cf_bands = c(1,3), threshold=c(-50, Inf),
+                                    filename = out_name)
+
+summary(b_metrics)
+Metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
 
 
-b_metrics2 <- getHarmMetrics(x = b_vrt, QC_good = QC_val)
-t <- smoothLoess(tsx = b_vrt, QC_good = NULL, dates = NULL, threshold = c(-50, Inf),
-                 res_type = "all")
+# old
+#b_metrics <- getHarmMetricsSpatial_JE(b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+#                                      overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
+#                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
+#                                     filename = out_name)
+#
+# b_metrics2 <- getHarmMetrics(x = b_vrt, QC_good = QC_val)
+#
+# t <- smoothLoess(tsx = b_vrt, QC_good = NULL, dates = NULL, threshold = c(-50, Inf),
+#                 res_type = "all")
+
 
 print(b_metrics)
 plot(b_metrics)
