@@ -43,6 +43,26 @@ if (!require(probaV)) install.packages('probaV')
 
 # install_github('johanez/probaV', dependencies = T)
 
+if (!require(wget)) install.packages('wget')
+
+
+# get coords
+x <- 10.00
+y <- 8.00
+
+# get tile number
+t <- probaVTileFromCoords(x, y)
+
+# Lets try wget
+u_name <- readline("Type the username:")
+p_word <- readline("Type the password:")
+
+dirloc <- paste(getwd(), '/2015/', sep = "")
+wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+wget_string
+system(wget_string)
+
+
 library(ranger)
 library(raster)
 library(ggvis)
@@ -85,7 +105,7 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c("NDVI.tif$") # "NDVI.tif$" 'RADIOMETRY.tif$', 
+patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
 #patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
@@ -99,7 +119,7 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_d = "2015-08-15",
+                    pattern = patterns, tiles = tiles, start_d = "2015-09-10",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
@@ -170,7 +190,7 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 
 
 
-ts <- smoothLoess2(1, QC_good=NULL, dates=NULL, threshold=c(-50, Inf), res_type=c("filled"))
+ts <- smoothLoess2(c(1,5), QC_good=NULL, dates=NULL, threshold=c(-50, Inf), res_type=c("filled"))
 
 t <- mapDistance2Loess2(b_vrt, QC_band = c(1,3), span = 0.3, res_type = c("distance"), mc.cores = 3)
 
