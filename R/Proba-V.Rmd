@@ -1,0 +1,96 @@
+---
+title: "Proba-V"
+author: "Jorn D"
+date: "05-8-2016"
+Version: "0.2 - beta (updated 19-8)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+
+```{r}
+getwd()
+```
+
+## Preperation
+
+This script has been tested and runs on a LINUX Centos machine, but might require some tweaking if used on other OS or versions. The data used within these scripts can be downloaded from http://proba-v.vgt.vito.be/ website. Lets start with loading the required libaries and packages to illustrate a workflow on working with the PROBA-V data.
+
+```{r, message=F, warning=F}
+# add additional libary path
+.libPaths( c( .libPaths(), "~/R/x86_64-redhat-linux-gnu-library/3.2") )
+
+## libaries
+library(ranger)
+library(raster)
+library(ggvis)
+library(rgdal)
+library(dplyr)
+library(devtools)
+library(gdalUtils)
+library(probaV)
+library(tools)
+library(knitr)
+
+```
+
+
+## Lets download some data! Below an example on how to download the PROBA-V tiles by using coordinates. 
+
+```{r}
+
+# Select the location for which you wish to download the PROBA-V  tiles for. 
+x <- 10.00
+y <- 8.00
+
+# In order to download the correct tile numbers, we use coordinates to convert to the tile number
+t <- probaVTileFromCoords(x, y)
+
+```
+
+```{r, , results='hide'}
+
+# To download data from the PROBA-V vito website, we need to be a registerd user (free). We need the username and password, which you can enter below.
+u_name <- readline("Type the username:")
+p_word <- readline("Type the password:")
+
+
+```
+
+
+```{r}
+# enter download location:
+dirloc <- paste(getwd(), '/2015/', sep = "")
+
+# Use wget to download the data. wget has be used directly in the terminal. Therefore, we pass the string to the system command.
+wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+print(wget_string)
+
+# pass the string to the terminal.
+#system(wget_string)
+
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
