@@ -43,26 +43,6 @@ if (!require(probaV)) install.packages('probaV')
 
 # install_github('johanez/probaV', dependencies = T)
 
-if (!require(wget)) install.packages('wget')
-
-
-# get coords
-x <- 10.00
-y <- 8.00
-
-# get tile number
-t <- probaVTileFromCoords(x, y)
-
-# Lets try wget
-u_name <- readline("Type the username:")
-p_word <- readline("Type the password:")
-
-dirloc <- paste(getwd(), '/2015/', sep = "")
-wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
-wget_string
-system(wget_string)
-
-
 library(ranger)
 library(raster)
 library(ggvis)
@@ -89,6 +69,27 @@ source("R/mapDistance2Loess2.R")
 data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
 #data_path <- getwd()
 #getwd()
+
+# ----------------------------------------- Download data --------------------------------------------
+# get coords
+x <- 10.00
+y <- 8.00
+
+# get tile number
+t <- probaVTileFromCoords(x, y)
+
+# Lets try wget
+u_name <- readline("Type the username:")
+p_word <- readline("Type the password:")
+
+dirloc <- paste(getwd(), '/2015/', sep = "")
+wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+wget_string
+system(wget_string)
+
+
+
+
 
 #### ----------- Preprocessing  -------------------------------------------------
 ## ---- check  downloaded data
