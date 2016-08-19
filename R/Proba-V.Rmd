@@ -57,11 +57,12 @@ x <- 10.00
 y <- 8.00
 
 # In order to download the correct tile numbers, we use coordinates to convert to the tile number
-t <- probaVTileFromCoords(x, y)
+tile <- probaVTileFromCoords(x, y)
+tile <- paste("\'*",tile,"*\'", sep ="")
 
 ```
 
-```{r, , results='hide'}
+```{r, results='hide'}
 
 # To download data from the PROBA-V vito website, we need to be a registerd user (free). We need the username and password, which you can enter below.
 u_name <- readline("Type the username:")
@@ -76,15 +77,25 @@ p_word <- readline("Type the password:")
 dirloc <- paste(getwd(), '/2015/', sep = "")
 
 # Use wget to download the data. wget has be used directly in the terminal. Therefore, we pass the string to the system command.
-wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
-print(wget_string)
 
-# pass the string to the terminal.
-#system(wget_string)
+
+wget_string <- paste('wget -A ', tile ,' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+
+print(wget_string)
 
 ```
 
 
+```{r, eval=FALSE}
+
+# pass the string to the terminal.
+system(wget_string)
+
+```
+
+
+
+r
 ## Including Plots
 
 You can also embed plots, for example:
