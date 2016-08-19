@@ -10,16 +10,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
 
 ```{r}
 getwd()
@@ -48,7 +38,26 @@ library(knitr)
 ```
 
 
-## Lets download some data! Below an example on how to download the PROBA-V tiles by using coordinates. 
+
+```{r, echo=F}
+# set the knitR working directory to the same file location as getwd(), in order to maintain the link to R source scripts.
+knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
+
+```
+
+```{r, message=F, warning=F}
+# below the fixed link file in order to load the ProbaV package from Johannes
+source("R/timeStackProbaV2.R")
+source("R/processProbaVbatch2.R")
+source("R/getHarmMetricsSpatial2.R")
+source("R/mapDistance2Loess2.R")
+
+
+```
+
+## Data download
+
+Lets download some data! Below an example on how to download the PROBA-V tiles by using coordinates. 
 
 ```{r}
 
@@ -77,8 +86,6 @@ p_word <- readline("Type the password:")
 dirloc <- paste(getwd(), '/2015/', sep = "")
 
 # Use wget to download the data. wget has be used directly in the terminal. Therefore, we pass the string to the system command.
-
-
 wget_string <- paste('wget -A ', tile ,' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
 
 print(wget_string)
@@ -88,20 +95,57 @@ print(wget_string)
 
 ```{r, eval=FALSE}
 
-# pass the string to the terminal.
+# pass the string to the terminal directly from R.
 system(wget_string)
 
 ```
 
+## Preprocessing
+
+---- check  downloaded data
+Only GeoTIFF is accepted
+The files should be stored in the folder structure used by vito
+(One foler per date contains files for all tiles).
 
 
-r
-## Including Plots
+```{r, echo=F}
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+# set your data path
+l0_dir <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+start by setting our data path which contains the downloaded files
+
+```{r, eval=F}
+# variable setting for data path
+10_dir <- "set data path"
+```
+
+The following function searches through the downloaded data folder and retrieves the product information, such as tiles and acquisition dates. Since the following functions only work on .tif files, we add '.tif$' to the pattern selection.
+```{r}
+df_probav_down <- getProbaVinfo(l0_dir, pattern = ".tif$")
+
+# plot the retrieved data
+df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
+```
+
+## clean data 
+```{r}
+# apply SM mask and split radiometry tif into single layers
+QC_val <- getProbaVQClist()$clear_all
+
+patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
+#patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
+tiles <- c("X18Y02") #..., "X21Y06")
+
+df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
+#df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
+nrow(df_in)
+
+# check cores
+detectCores(all.tests = FALSE, logical = TRUE)
+
+
+```
+
+
