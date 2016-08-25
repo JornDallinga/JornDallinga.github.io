@@ -42,13 +42,20 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   
   xprocessed <- foreach(i=x, o=outnames, .combine = c, .multicombine = T, .inorder = F, .packages = c("raster", "rgdal"), .verbose = T ) %dopar% {
     cat("...out:", o)
-    r <- cleanProbaV(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is )
+    r <- cleanProbaV2(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite )
     print(r)
     o
   }
   
   registerDoSEQ()
   cat(length(xprocessed), " files processed")
+  
+  # delete if files exists
+  f_exist <- subset(outnames, file.exists(outnames) == T)
+  if (length(f_exist) > 0){
+    file.remove(f_exist)
+  }
+  
   return(xprocessed)
   
   # old...
