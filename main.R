@@ -53,6 +53,8 @@ library(gdalUtils)
 library(probaV)
 library(tools)
 library(knitr)
+library(doParallel)
+library(foreach)
 
 
 # below the fixed link file in order to load the ProbaV package from Johannes
@@ -125,6 +127,8 @@ processProbaVbatch2(l0_dir,
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
+
+
 
 # check result for red
 df_sm <- getProbaVinfo(file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")), pattern = "sm.tif$")
@@ -228,22 +232,22 @@ plot(b_metrics)
 
 
 
-r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20150301/PROBAV_S5_TOC_20150301_100M_V001/PROBAV_S5_TOC_X15Y00_20150301_100M_V001_RADIOMETRY.tif"
-i <- r
-o <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X15Y00_20150301_100M_V001.tif"
-filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X15Y00_20150301_100M_V001.tif"
-type <- dataType(raster(i[1]))
-fill <- 255
-as.is <- F
-ow <- T
-
-g <- cleanProbaV2(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = F)
+processProbaVbatch_0(l0_dir, pattern = patterns, tiles = tiles, start_d = "2015-10-10",
+                   QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                   ncores = 3, overwrite=T)
 
 
-f_data <- i
 
 
-outdir
+
+r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_RADIOMETRY.tif"
+filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001.tif"
+type <- dataType(raster(r[1]))
+
+g <- cleanProbaV2(r, filename=filename, QC_val = QC_val, fill=255, datatype = type, as.is = F, overwrite = F)
+
+r1 <- raster(r)
+rr <- raster(filename)
 
 
 
