@@ -15,9 +15,20 @@ knitr::opts_chunk$set(echo = TRUE)
 getwd()
 ```
 
+
 ## Preperation
 
-This script has been tested and runs on a LINUX Centos machine, but might require some tweaking if used on other OS or versions. The data used within these scripts can be downloaded from http://proba-v.vgt.vito.be/ website. Lets start with loading the required libaries and packages to illustrate a workflow on working with the PROBA-V data.
+This script has been tested and runs on a LINUX Centos machine, but might require some tweaking if used on other OS or versions. 
+
+System on which the script has been tested:
+```{r, echo=F}
+Sys.info()['sysname']
+.Platform$OS.type
+version$os ## or R.version$os
+```
+
+
+The data used within these scripts can be downloaded from http://proba-v.vgt.vito.be/ website. Lets start with loading the required libaries and packages to illustrate a workflow on working with the PROBA-V data.
 
 ```{r, message=F, warning=F}
 # add additional libary path
@@ -33,6 +44,7 @@ library(devtools)
 library(gdalUtils)
 library(probaV)
 library(tools)
+library(parallel)
 library(knitr)
 
 ```
@@ -67,7 +79,7 @@ y <- 8.00
 
 # In order to download the correct tile numbers, we use coordinates to convert to the tile number
 tile <- probaVTileFromCoords(x, y)
-tile <- paste("\'*",tile,"*\'", sep ="")
+tile_str <- paste("\'*",tile,"*\'", sep ="")
 
 ```
 
@@ -86,7 +98,7 @@ p_word <- readline("Type the password:")
 dirloc <- paste(getwd(), '/2015/', sep = "")
 
 # Use wget to download the data. wget has be used directly in the terminal. Therefore, we pass the string to the system command.
-wget_string <- paste('wget -A ', tile ,' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+wget_string <- paste('wget -A ', tile_str ,' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
 
 print(wget_string)
 
@@ -118,7 +130,10 @@ start by setting our data path which contains the downloaded files
 
 ```{r, eval=F}
 # variable setting for data path
-10_dir <- "set data path"
+10_dir <- "set data path" 
+# if you manually downloaded the data
+10_dir <- dirloc
+
 ```
 
 The following function searches through the downloaded data folder and retrieves the product information, such as tiles and acquisition dates. Since the following functions only work on .tif files, we add '.tif$' to the pattern selection.
@@ -130,22 +145,46 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ```
 
 ## clean data 
+The function 'getProbaVQClist' creates a dataframe of state mask (SM) codes based on the quality indicators in the Status Map dataset. It provides an overview of clear codes per channel. 
 ```{r}
-# apply SM mask and split radiometry tif into single layers
+# Top of dataframe showing SM codes. 
+head(getProbaVQClist()$all_bits)
+# For clear pixel selection, we use the SM codes with 'clear_all', which means that a certain pixel is not marked as shadow, cloud, ice or sea. Additionally, it selects only the 'good' quality pixels of the radiometric bands (SWIR, NIR, RED, BLUE).
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
-#patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
+# The QC_variable now stores the high quality value:
+QC_val
+```
+
+Lets split the radiometry .tif into single layers (SWIR, NIR, RED, BLUE)
+```{r}
+# First, select the radiometry .tif files from the download folder and which tiles to use
+patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$"
 tiles <- c("X18Y02") #..., "X21Y06")
+# or tiles <- tile
 
+# Lets gather the information from the radiometry band using the variables assigned above. 
+head(getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles))
+
+#How many radiometry bands do we have of the assigned tiles?
 df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
-#df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 nrow(df_in)
+```
 
-# check cores
+## Proccessing a ProbaV bath
+```{r}
+# How many cores do we have:
 detectCores(all.tests = FALSE, logical = TRUE)
+
+# parallel with foreach
+#start_d = df_in$date[nrow(df_in)],
+# similar for NDVI
+processProbaVbatch2(l0_dir, 
+                    pattern = patterns, tiles = tiles, start_d = "2015-09-10",
+                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    overwrite=F)
 
 
 ```
-
 

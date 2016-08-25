@@ -1,6 +1,5 @@
 processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL, QC_val = QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
-  # x <- l0_dir
-  if (class(pattern) == 'list') pattern <- unlist(pattern)
+  #x <- l0_dir
   if (!is.character(x)) {
     stop('x needs to be of class character')
   }
@@ -26,18 +25,16 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   type <- dataType(raster(x[1]))
   
   outnames <- file.path(outdir, gsub("\\.tif", "_sm.tif", basename(x)))
-  # for unstacking radiometry image, sm will be in band suffix, for checking we use the red band
   outnames <- gsub("RADIOMETRY_sm\\.tif", "RED0_sm.tif", outnames)
-  #x2 <- list.files(outdir, full.names = T)
-  #if(!overwrite){
-  #  x <- x[!file.exists(outnames)]
-  #  outnames <- outnames[!file.exists(outnames)]
-  #}
+
+  if(!overwrite){
+    x <- x[!file.exists(outnames)]
+    outnames <- outnames[!file.exists(outnames)]
+  }
+
   outnames <- gsub("_RED0_sm\\.tif", ".tif", outnames)
   
-  
   cat("Processing", length(x), "files. Names: ", length(outnames), "\n")
-  
   
   if (ncores > 1){
     registerDoParallel(ncores)
