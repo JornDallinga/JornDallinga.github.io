@@ -43,16 +43,17 @@ if (!require(probaV)) install.packages('probaV')
 
 # install_github('johanez/probaV', dependencies = T)
 
+library(rgdal)
 library(ranger)
 library(raster)
 library(ggvis)
-library(rgdal)
 library(dplyr)
 library(devtools)
 library(gdalUtils)
 library(probaV)
 library(tools)
 library(knitr)
+
 
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/timeVrtProbaV2.R")
@@ -120,7 +121,7 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_d = "2015-09-10",
+                    pattern = patterns, tiles = tiles, start_d = "2015-10-10",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
@@ -227,16 +228,22 @@ plot(b_metrics)
 
 
 
+r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20150301/PROBAV_S5_TOC_20150301_100M_V001/PROBAV_S5_TOC_X15Y00_20150301_100M_V001_RADIOMETRY.tif"
+i <- r
+o <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X15Y00_20150301_100M_V001.tif"
+filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X15Y00_20150301_100M_V001.tif"
+type <- dataType(raster(i[1]))
+fill <- 255
+as.is <- F
+ow <- T
+
+g <- cleanProbaV2(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = F)
 
 
+f_data <- i
 
 
-
-
-
-
-
-
+outdir
 
 
 
