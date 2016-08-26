@@ -109,7 +109,7 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
+patterns <- c('NDVI.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
 #patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
@@ -173,9 +173,11 @@ if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
   df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2015-08-15", end_date = "2015-10-26")
 } else {
-  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = T, start_date = "2015-08-15", end_date = "2015-10-26")
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-08-15", end_date = "2015-10-26")
+  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-10", end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-10-10", end_date = "2015-10-26")
 }
+b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', tile = tiles[tn], end_date = "2015-10-26")
+
 
 # temp idea to reduce extent
 plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151016_100M_V001_BLUE_sm.tif)
@@ -187,12 +189,13 @@ plot(b_vrt)
 names(b_vrt) <- basename(df_probav_sm$fpath)
 print(b_vrt)
 
-#plotRGB(b_vrt, 9, 8, 7, stretch='lin')
+plotRGB(b_vrt, 9, 8, 7, stretch='lin')
 
 # --- get metrics ---  #
 cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
             nrow(df_probav_sm), paste0(bands, collapse = " "),
             blockSize(b_vrt, minrows = minrows)$n, mc.cores))
+
 
 
 
@@ -202,10 +205,10 @@ t <- mapDistance2Loess2(b_vrt, QC_band = c(1,3), span = 0.3, res_type = c("dista
 
 
 
-b_metrics <- getHarmMetricsSpatial2(b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
-                                    overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
-                                    cf_bands = c(1,3), threshold=c(-50, Inf),
-                                    filename = out_name)
+b_metrics <- getHarmMetricsSpatial_JE(b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+                                      overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
+                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
+                                      filename = out_name)
 
 summary(b_metrics)
 Metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
@@ -233,8 +236,8 @@ plot(b_metrics)
 
 
 processProbaVbatch_0(l0_dir, pattern = patterns, tiles = tiles, start_d = "2015-10-10",
-                   QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                   ncores = 3, overwrite=T)
+                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                     ncores = 3, overwrite=T)
 
 
 

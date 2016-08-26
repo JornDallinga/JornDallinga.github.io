@@ -1,4 +1,4 @@
-timeStackProbaV2 <- function(x, pattern, order_chrono=TRUE, tile=NULL, quick=FALSE, end_date=NULL, start_date=NULL, ...){
+timeStackProbaV2 <- function(x, pattern, order_chrono=TRUE, tile=NULL, quick=FALSE, start_date = NULL, end_date=NULL, ...){
   
   df_info <- getProbaVinfo(x, pattern)
   if(order_chrono){
@@ -9,15 +9,14 @@ timeStackProbaV2 <- function(x, pattern, order_chrono=TRUE, tile=NULL, quick=FAL
   if (!is.null(end_date) & !is.null(start_date)){
     df_info  <- df_info[(df_info$date) <= end_date & (df_info$date) >= start_date,]
   } else if (is.null(end_date)) {
-      end_date <- max(df_info$date)
+    end_date <- max(df_info$date)
   } else if (is.null(start_date)){
-      start_date <- min(df_info$date)
+    start_date <- min(df_info$date)
   }
   
   if (!is.null(end_date) & !is.null(start_date)) df_info  <- df_info[(df_info$date) <= end_date & (df_info$date) >= start_date,]
   
-  
-  s <- raster::stack(file.path(fdir, df_info$fpath), quick=quick)
+  s <- raster::stack(file.path(x, df_info$fpath), quick=quick)
   
   #cat("build brick ... ")
   #s <- brick(s)

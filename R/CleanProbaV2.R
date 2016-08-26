@@ -1,4 +1,4 @@
-cleanProbaV2 <- function(f_data, QC_val, fill=255, as.is=FALSE, overwrite = overwrite, ...){
+cleanProbaV3 <- function(f_data, QC_val, fill=255, as.is=FALSE, overwrite = overwrite, ...){
   
   # derive QC filename from data file name, check
   f_QC <- gsub("_[A-Z]+\\.tif", "_SM.tif", f_data)
@@ -27,11 +27,12 @@ cleanProbaV2 <- function(f_data, QC_val, fill=255, as.is=FALSE, overwrite = over
       
       if (hasArg(filename)) {
         cat("writing...")
-        writeRaster(b, ... , overwrite = overwrite , bylayer=T, suffix=c("RED0_sm", "NIR0_sm", "BLUE_sm", "SWIR_sm"), progress="bar")
+        writeRaster(b, ... , overwrite = overwrite, bylayer=T, suffix=c("RED0_sm", "NIR0_sm", "BLUE_sm", "SWIR_sm"), progress="bar")
+        file.remove(filename)
       }
     } else {
       # single leyer, e.g. NDVI
-      raster::overlay(x = data, y = QC, fun = clean, ...)
+      raster::overlay(x = data, y = QC, fun = clean, overwrite = overwrite, ...)
     }
   }
 }

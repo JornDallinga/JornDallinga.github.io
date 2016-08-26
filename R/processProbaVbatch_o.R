@@ -49,8 +49,8 @@ processProbaVbatch_0 <- function(x, pattern = "NDVI.tif$", tiles=NULL, start_d=N
   
   registerDoSEQ()
   cat(length(xprocessed), " files processed")
-
-
+  
+  
   return(xprocessed)
   
   # old...

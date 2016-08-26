@@ -26,12 +26,12 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   
   outnames <- file.path(outdir, gsub("\\.tif", "_sm.tif", basename(x)))
   outnames <- gsub("RADIOMETRY_sm\\.tif", "RED0_sm.tif", outnames)
-
+  
   if(!overwrite){
     x <- x[!file.exists(outnames)]
     outnames <- outnames[!file.exists(outnames)]
   }
-
+  
   outnames <- gsub("_RED0_sm\\.tif", ".tif", outnames)
   
   cat("Processing", length(x), "files. Names: ", length(outnames), "\n")
@@ -42,18 +42,26 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   
   xprocessed <- foreach(i=x, o=outnames, .combine = c, .multicombine = T, .inorder = F, .packages = c("raster", "rgdal"), .verbose = T ) %dopar% {
     cat("...out:", o)
-    r <- cleanProbaV2(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite )
+    r <- cleanProbaV3(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite )
     print(r)
     o
   }
   
   registerDoSEQ()
-  cat(length(xprocessed), " files processed")
+  
+  if (length(xprocessed) == 0){
+    cat(length(xprocessed), " files processed, files allready exists or are out of range")
+  } else {
+    cat(length(xprocessed), " files processed")
+  }
+  
   
   # delete if files exists
   f_exist <- subset(outnames, file.exists(outnames) == T)
-  if (length(f_exist) > 0){
+  if (length(f_exist) > 0 & pattern != "NDVI.tif$"){
+    cat("\n","deleting temp files")
     file.remove(f_exist)
+    cat(length(f_exist), " files removed")
   }
   
   return(xprocessed)

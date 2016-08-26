@@ -21,7 +21,7 @@ getwd()
 This script has been tested and runs on a LINUX Centos machine, but might require some tweaking if used on other OS or versions. 
 
 System on which the script has been tested:
-```{r, echo=F}
+```{r, echo=F, results= 'hold'}
 Sys.info()['sysname']
 .Platform$OS.type
 version$os ## or R.version$os
@@ -63,6 +63,7 @@ source("R/timeStackProbaV2.R")
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial2.R")
 source("R/mapDistance2Loess2.R")
+source("R/CleanProbaV2.R")
 
 
 ```
@@ -181,7 +182,6 @@ filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_2
 
 cleanProbaV2(f_data = r, filename=filename, QC_val = QC_val, fill=255, datatype = type <- dataType(raster(r[1])), as.is = F, overwrite = F)
 
-
 ```
 
 ```{r, echo=F}
@@ -193,6 +193,7 @@ plot(raster(filename))
 
 
 ## Proccessing a ProbaV bath
+The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. 
 ```{r}
 # How many cores do we have:
 detectCores(all.tests = FALSE, logical = TRUE)
