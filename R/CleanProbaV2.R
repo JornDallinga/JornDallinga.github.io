@@ -1,4 +1,4 @@
-cleanProbaV3 <- function(f_data, QC_val, fill=255, as.is=FALSE, overwrite = overwrite, ...){
+cleanProbaV2 <- function(f_data, QC_val, fill=255, as.is=FALSE, overwrite = overwrite, ...){
   
   # derive QC filename from data file name, check
   f_QC <- gsub("_[A-Z]+\\.tif", "_SM.tif", f_data)
