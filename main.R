@@ -63,7 +63,8 @@ source("R/timeStackProbaV2.R")
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial2.R")
 source("R/mapDistance2Loess2.R")
-
+source("R/CleanProbaV2.R")
+source("R/getHarmMetricsSpatial_JE.R")
 
 
 
@@ -123,7 +124,7 @@ detectCores(all.tests = FALSE, logical = TRUE)
 #start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_d = "2015-10-10",
+                    pattern = patterns, tiles = tiles, start_d = "2014-01-25",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
@@ -169,46 +170,67 @@ gdalinfo(version = T)
 
 # virtual raster
 
+## Select the bands to use in sequential functions
+bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+
 if (file.exists(vrt_name)) {
   b_vrt <- brick(vrt_name)
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2015-08-15", end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2015-08-15", end_date = "2015-10-26")
 } else {
-  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-10", end_date = "2015-10-26")
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-10-10", end_date = "2015-10-26")
+  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-02-10", end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2014-02-10", end_date = "2015-10-26")
 }
-b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', tile = tiles[tn], end_date = "2015-10-26")
+#b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', tile = tiles[tn], end_date = "2015-10-26")
 
 
 # temp idea to reduce extent
-plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151016_100M_V001_BLUE_sm.tif)
+plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151016_100M_V001_NDVI_sm.tif)
 ext <- drawExtent()
 cr <- crop(x = b_vrt, y = ext)
 b_vrt <- cr
 plot(b_vrt)
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
+names(b_vrt) <- paste(probav_sm_dir, names(b_vrt), sep= "")
 print(b_vrt)
 
-plotRGB(b_vrt, 9, 8, 7, stretch='lin')
+#plotRGB(b_vrt, 9, 8, 7, stretch='lin')
 
 # --- get metrics ---  #
 cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
             nrow(df_probav_sm), paste0(bands, collapse = " "),
             blockSize(b_vrt, minrows = minrows)$n, mc.cores))
 
+## time searies testing $$
+#z <- zoo(c(b_vrt[10]), getZ(b_vrt))
+
+# get single cell with dates preserved
+z <- zoo(c(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif[2]), getZ(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif))
+
+f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
+plot(f)
+plot(f$x)
 
 
+d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
+round(d, digits = 3)
 
-ts <- smoothLoess2(c(1,5), QC_good=NULL, dates=NULL, threshold=c(-50, Inf), res_type=c("filled"))
-
-t <- mapDistance2Loess2(b_vrt, QC_band = c(1,3), span = 0.3, res_type = c("distance"), mc.cores = 3)
-
-
-
-b_metrics <- getHarmMetricsSpatial_JE(b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                       overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
                                       cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name)
+                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1)
+
+b_metrics1 <- getHarmMetricsSpatial_Or(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+                                      overwrite=T, span=0.3, datatype="FLT4S", scale_f = c(10,100,10),
+                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120), filename = out_name )
+
+
+# datatype="FLT4S"
+# datatype="INT2S"
+r <- raster("/DATA/GEOTIFF/PROBAV_L3_S5_TOC_NDVI_100M/20150301/PROBAV_S5_TOC_20150301_100M_NDVI_V001/PROBAV_S5_TOC_X18Y02_20150301_100M_NDVI_V001_NDVI.tif")
+
+
 
 summary(b_metrics)
 Metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
@@ -235,19 +257,19 @@ plot(b_metrics)
 
 
 
-processProbaVbatch_0(l0_dir, pattern = patterns, tiles = tiles, start_d = "2015-10-10",
+processProbaVbatch_0(l0_dir, pattern = patterns, tiles = tiles, start_d = "2015-10-25",
                      QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                      ncores = 3, overwrite=T)
 
 
 
 
-
-r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_RADIOMETRY.tif"
-filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001.tif"
+r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_NDVI.tif"
+# r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_RADIOMETRY.tif"
+filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001-test1.tif"
 type <- dataType(raster(r[1]))
 
-g <- cleanProbaV2(r, filename=filename, QC_val = QC_val, fill=255, datatype = type, as.is = F, overwrite = F)
+g <- cleanProbaV2(r, filename=filename, QC_val = QC_val, fill=255, as.is = F, overwrite = T)
 
 r1 <- raster(r)
 rr <- raster(filename)
