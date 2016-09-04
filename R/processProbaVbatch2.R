@@ -22,7 +22,12 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   x <- paste0(l0_dir,'/',x$fpath)
   
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
-  type <- dataType(raster(x[1]))
+  
+  if (pattern == "NDVI.tif$"){
+    type <- "FLT4S"
+  } else {
+    type <- dataType(raster(x[1]))
+  }
   
   outnames <- file.path(outdir, gsub("\\.tif", "_sm.tif", basename(x)))
   outnames <- gsub("RADIOMETRY_sm\\.tif", "RED0_sm.tif", outnames)
@@ -42,7 +47,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
   
   xprocessed <- foreach(i=x, o=outnames, .combine = c, .multicombine = T, .inorder = F, .packages = c("raster", "rgdal"), .verbose = T ) %dopar% {
     cat("...out:", o)
-    r <- cleanProbaV3(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite )
+    r <- cleanProbaV(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite )
     print(r)
     o
   }
