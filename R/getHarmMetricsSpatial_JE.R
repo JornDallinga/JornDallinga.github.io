@@ -1,6 +1,6 @@
 getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=2, robust=FALSE,
-                                     cf_bands, thresholds=c(-80, Inf, -120, 120) , span=0.3, scale_f=NULL, minrows=1, mc.cores=1, logfile, ...) {
-  s_info <- getProbaVinfo(probav_sm_dir, pattern =  '(BLUE|SWIR|NDVI)_sm.tif$', tiles = tiles[tn])
+                                     cf_bands, thresholds=c(-80, Inf, -120, 120) , span=0.3, scale_f=NULL, minrows=1, mc.cores=1, logfile, probav_sm_dir, ...) {
+  s_info <- getProbaVinfo(probav_sm_dir, pattern =  bands_sel, tiles = tiles[tn])
   #s_info <- getProbaVinfo(names(x))
   bands <- s_info[s_info$date == s_info$date[1], 'band']
   dates <- s_info[s_info$band == bands[1], 'date']
@@ -10,6 +10,7 @@ getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=2, robust=FALSE,
   }
   thresholds <- matrix(thresholds, nrow=2)
   len_res <- (3 + (order*2)) * length(bands)
+  len_res <- len_res + 3
   
   cat("\nOutputlayers:", len_res, "\n")
   
@@ -28,7 +29,7 @@ getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=2, robust=FALSE,
         }
         
         #get metrics
-        coefs <- apply(m, 1, FUN=getHarmMetrics, yday=ydays, QC_good=qc, order=order, robust=robust)
+        coefs <- apply(m, 1, FUN=getHarmMetrics, yday=ydays, QC_good=qc, order=order, robust=robust, dates = dates)
         
         if (!is.null(scale_f)){
           # scaling
@@ -38,7 +39,7 @@ getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=2, robust=FALSE,
         if (length(res_1) != len_res) {
           res_1 <- rep(-9999, len_res)
         }
-        res_1
+        res <- res_1
       })
       
       if(class(res) == 'try-error') {
@@ -54,7 +55,7 @@ getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=2, robust=FALSE,
   }
   
   # use mcCalc ratehr than mc.calc (controll minrows)
-  out <- mcCalc(x=x, fun=fun, minrows = minrows, mc.cores = mc.cores, logfile=logfile, out_name = out_name, ...)
+  out <- mcCalc(x=x, fun=fun, minrows = minrows, mc.cores = mc.cores, logfile=logfile, out_name = out_name)
   
   return(out)
 }
