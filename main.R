@@ -55,6 +55,7 @@ library(tools)
 library(knitr)
 library(doParallel)
 library(foreach)
+library(zoo)
 
 
 # below the fixed link file in order to load the ProbaV package from Johannes
@@ -172,6 +173,8 @@ gdalinfo(version = T)
 
 ## Select the bands to use in sequential functions
 bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- 'NDVI' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
 if (file.exists(vrt_name)) {
@@ -206,7 +209,10 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 #z <- zoo(c(b_vrt[10]), getZ(b_vrt))
 
 # get single cell with dates preserved
-z <- zoo(c(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif[2]), getZ(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif))
+
+#z <- zoo(c(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif[2]), getZ(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif))
+z <- zoo(c(b_vrt[1]), getZ(b_vrt))
+
 
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
 plot(f)
@@ -216,16 +222,27 @@ plot(f$x)
 d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
 round(d, digits = 3)
 
+# No scale
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
-                                      overwrite=T, span=0.3, datatype="INT2S", scale_f = c(10,100,10),
-                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1)
+                                      overwrite=T, span=0.3,
+                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
 
-b_metrics1 <- getHarmMetricsSpatial_Or(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
-                                      overwrite=T, span=0.3, datatype="FLT4S", scale_f = c(10,100,10),
-                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120), filename = out_name )
+# Scaled
+b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+                                      overwrite=T, span=0.3, scale_f = c(10,100,10),
+                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
 
 
+
+# when running the fun using calc it works
+tt <- calc(x = b_vrt, fun = fun)
+dataType(tt) # "FLT4S"
+
+
+# scale_f = c(10,100,10)
+# thresholds=c(-80, Inf, -120, 120)
 # datatype="FLT4S"
 # datatype="INT2S"
 r <- raster("/DATA/GEOTIFF/PROBAV_L3_S5_TOC_NDVI_100M/20150301/PROBAV_S5_TOC_20150301_100M_NDVI_V001/PROBAV_S5_TOC_X18Y02_20150301_100M_NDVI_V001_NDVI.tif")
