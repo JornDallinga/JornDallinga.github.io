@@ -9,8 +9,7 @@ getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=1, robust=FALSE,
     stop("Inputstack nlayers doesn't fit meta data in layer names!")
   }
   thresholds <- matrix(thresholds, nrow=2)
-  len_res <- (3 + (order*2)) * length(bands)
-  len_res <- len_res + 1
+  len_res <- (4 + (order*2)) * length(bands)
   
   cat("\nOutputlayers:", len_res, "\n")
   

@@ -122,7 +122,7 @@ nrow(df_in)
 # check cores
 detectCores(all.tests = FALSE, logical = TRUE)
 # parallel with foreach
-#start_d = df_in$date[nrow(df_in)],
+# start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
                     pattern = patterns, tiles = tiles, start_d = "2014-01-25",
@@ -189,8 +189,17 @@ if (file.exists(vrt_name)) {
 
 # temp idea to reduce extent
 plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151016_100M_V001_NDVI_sm.tif)
-ext <- drawExtent()
-cr <- crop(x = b_vrt, y = ext)
+e <- drawExtent()
+
+# or
+
+xmin <- 9.191336 
+xmax <- 9.218927 
+ymin <- 45.53769
+ymax <- 45.55274 
+e <- extent(c(xmin,xmax,ymin,ymax))
+
+cr <- crop(x = b_vrt, y = e)
 b_vrt <- cr
 plot(b_vrt)
 
@@ -212,9 +221,19 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 
 #z <- zoo(c(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif[2]), getZ(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif))
 z <- zoo(c(b_vrt[1]), getZ(b_vrt))
+plot(z)
 
 
-f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
+f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,threshold=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
+ff <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type= c("distance", "sd_distance", "all", "filled", "omit", "QC"), span=0.3)
+
+
+
+m <- matrix(x[1], nrow= length(bands), ncol=length(dates))
+
+
+test <- calc(x = b_vrt, fun = smoothLoess, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("QC"), span=0.3 )
+
 plot(f)
 plot(f$x)
 
@@ -224,8 +243,8 @@ round(d, digits = 3)
 
 # No scale
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
-                                      overwrite=T, span=0.3,
-                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      overwrite=T, span=0.3, scale_f = NULL,
+                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
                                       filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
 
 # Scaled
