@@ -2,7 +2,7 @@
 title: "Proba-V"
 author: "Jorn D"
 date: "05-8-2016"
-Version: "0.2 - beta (updated 19-8)"
+Version: "0.3 (updated 7-9)"
 output: html_document
 ---
 
@@ -46,6 +46,7 @@ library(probaV)
 library(tools)
 library(parallel)
 library(knitr)
+library(zoo)
 
 ```
 
@@ -59,12 +60,11 @@ knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
 
 ```{r, message=F, warning=F}
 # below the fixed link file in order to load the ProbaV package from Johannes
-source("R/timeStackProbaV2.R")
 source("R/processProbaVbatch2.R")
-source("R/getHarmMetricsSpatial2.R")
+source("R/getHarmMetricsSpatial_JE.R")
 source("R/mapDistance2Loess2.R")
 source("R/CleanProbaV2.R")
-
+source("R/timeVrtProbaV2.R")
 
 ```
 
@@ -180,11 +180,11 @@ r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20151021/PROBAV_S5_TOC_20151021_100M_V
 # Assign a file.path (including filename) to which we will write the cleaned data.
 filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001.tif"
 
-cleanProbaV2(f_data = r, filename=filename, QC_val = QC_val, fill=255, datatype = type <- dataType(raster(r[1])), as.is = F, overwrite = F)
+cleanProbaV2(f_data = r, filename=filename, QC_val = QC_val, fill=255, datatype="FLT4S", as.is = F, overwrite = T)
 
 ```
 
-```{r, echo=F}
+```{r}
 # The result is a cleaned raster dataset (right) with only the quality control value (QC_val) selected. 
 par(mfrow = c(1, 2))
 plot(raster(r))
@@ -194,7 +194,7 @@ plot(raster(filename))
 
 ## Proccessing a ProbaV bath
 The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. 
-```{r}
+```{r, eval=F}
 # How many cores do we have:
 detectCores(all.tests = FALSE, logical = TRUE)
 
@@ -206,5 +206,121 @@ processProbaVbatch2(l0_dir,
                     overwrite=F)
 
 
+```
+
+## Input check for next functions
+```{r}
+
+# ----- cehck input --- #
+tn <- 1
+tiles <- c("X18Y02")
+probav_sm_dir <- file.path(paste0(getwd(),"/rsdata/probav/sm2/", collapse =""))
+df_probav_sm <- getProbaVinfo(probav_sm_dir, pattern =  '_sm.tif$', tiles = tiles[tn])
+glimpse(df_probav_sm)
+
+# ----- parameters ----#
+bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
+dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
+minrows = 15
+mc.cores = detectCores(all.tests = FALSE, logical = TRUE)-1
+#logfile <- paste0("~/PROBA_V/rsdata/lcafrica/logs/metrics_tmp_", tiles[tn], ".log")
+logfile <- file.path(getwd(), paste0("rsdata/probav/logs/", tiles[tn], ".log"))
+
+vrt_name <- file.path(getwd(), paste0("rsdata/probav/sm2/", tiles[tn], "_",paste0(bands, collapse = "_"), ".vrt"))
+out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
+#rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "window",
+#              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
+
+rasterOptions(todisk = F, progress = "text",
+              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
+
+
+# --- buld a vrt ---#
+#(its faster than raster stack!)
+gdalinfo(version = T)
+```
+
+## Select bands
+Band selection for the virtual raster stack
+```{r}
+## Select the bands to use in sequential functions
+bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- 'NDVI' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+```
+
+
+## virtual stack
+Create a virtual stack from selected bands
+```{r}
+ b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-02-10", end_date = "2015-10-26")
+  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2014-02-10", end_date = "2015-10-26")
+
+```
+
+## set temp extent
+```{r}
+xmin <- 9.191336 
+xmax <- 9.218927 
+ymin <- 45.53769
+ymax <- 45.55274 
+e <- extent(c(xmin,xmax,ymin,ymax))
+
+# crop to extent
+cr <- crop(x = b_vrt, y = e)
+b_vrt <- cr
+plot(b_vrt)
+```
+
+## check layers, bands, blocks and cores
+
+```{r}
+# --- get metrics ---  #
+cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
+            nrow(df_probav_sm), paste0(bands, collapse = " "),
+            blockSize(b_vrt, minrows = minrows)$n, mc.cores))
+```
+
+
+## create time series using zoo
+```{r}
+# Select first pixel of our raster stack
+z <- zoo(c(b_vrt[1]), getZ(b_vrt))
+
+# use smoothloes to create time series
+f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
+plot(f)
+```
+
+## get metrics from smoothloes cleaned data
+```{r}
+d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
+d
+```
+
+
+## Run metrics with a raster output
+```{r}
+# No scale
+b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+                                      overwrite=T, span=0.3,
+                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
+```
+
+
+## plot the metrics
+
+```{r}
+# metrics info
+b_metrics
+
+# band order
+# names c("min", "max", "intercept", names(lmh$coefficients)[-1])
+# 
+
+# plotting metrics
+plot(b_metrics)
 ```
 
