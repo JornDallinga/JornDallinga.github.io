@@ -111,7 +111,7 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c('NDVI.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
+patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
 #patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
@@ -125,7 +125,7 @@ detectCores(all.tests = FALSE, logical = TRUE)
 # start_d = df_in$date[nrow(df_in)],
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_d = "2014-01-25",
+                    pattern = patterns, tiles = tiles, start_date = "2014-03-06", end_date = "2015-12-06",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
@@ -161,7 +161,9 @@ out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_
 #              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
 
 rasterOptions(todisk = F, progress = "text",
-              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
+              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")), maxmemory = 2e+08, chunksize = 2e+08)
+
+
 
 
 # --- buld a vrt ---#
@@ -173,30 +175,91 @@ gdalinfo(version = T)
 
 ## Select the bands to use in sequential functions
 bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
-bands_select <- 'NDVI' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- '(BLUE)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
-if (file.exists(vrt_name)) {
-  b_vrt <- brick(vrt_name)
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2015-08-15", end_date = "2015-10-26")
-} else {
-  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-02-10", end_date = "2015-10-26")
-  df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2014-02-10", end_date = "2015-10-26")
-}
-#b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = '(BLUE|SWIR|NDVI)_sm.tif$', tile = tiles[tn], end_date = "2015-10-26")
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-03-06", end_date = "2015-03-06")
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2014-03-06", end_date = "2015-12-06")
 
 
-# temp idea to reduce extent
-plot(b_vrt$PROBAV_S5_TOC_X18Y02_20151016_100M_V001_NDVI_sm.tif)
+
+#---------------------------start plotting ------------------------------------------#
+# plot RGB
+bands_select <- '(BLUE|SWIR|NIR0|RED0)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- '(BLUE|SWIR|NIR0)' 
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+
+# dir with clouds
+probav_sm_dir <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm_Withclouds/"
+# dir without clouds
+probav_sm_dir <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/"
+
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-04-15", end_date = "2015-04-17")
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2015-04-15", end_date = "2015-04-17")
+
+# set par back to normal
+par(mfrow=c(1,1))
+plotRGB(b_vrt,3, 2, 1, stretch='lin')
+
+
+# with clouds
+plot(b_vrt)
+b_vrt_cloud <- b_vrt
+plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
+
+
+# cloud mask SM
+plot(b_vrt)
+r <- b_vrt
+r2 <- r
+r2[is.na(r)] <- 9999
+r2[r2 < 9999] <- NA
+
+cl <- brick("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/cloudfilter/Clouds.tif")
+cl_ma <- raster("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/cloudfilter/cloud_mask_SM.tif")
+cl_fi <- raster("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/cloudfilter/cloudfilter.tif")
+
+cl_ma[cl_fi == 1] <- 1
+breakpoints <- c(0,2,9999)
+colors <- c("darkred","red")
+plot(cl_ma,breaks=breakpoints,col=colors, add = T, legend = F)
+
+plotRGB(cl, 3, 2, 1, stretch='lin')
+plot(no_cl, add = T, col = 'red')
+plot(cl_fi, add = T, col = 'darkred')
+
+#plotRGB(r, 3, 4, 1, stretch='lin')
+r3 <- subset(r2,1)
+plot(r3, col = 'red', add = T, legend = F)
+
+writeRaster(blue_filter_c, filename =  "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/cloudfilter/cloudfilter.tif")
+
+# temporal outliers
+blue_filter <- subset(out,10)
+blue_filter <- b_vrt
+blue_filter_c <- blue_filter
+blue_filter_c[blue_filter != 2] <- NA 
+blue_filter_c[blue_filter == 2] <- 1
+plot(blue_filter_c, col = 'darkred', add = T, legend = F)
+
+#plotRGB(b_vrt)
 e <- drawExtent()
 
 # or
+# temp idea to reduce extent
+xmin <- 9.191336 # 4.177083 
+xmax <- 9.218927 # 5.582837 
+ymin <- 45.53769 # 50.55804
+ymax <- 45.55274 # 52.03919
 
-xmin <- 9.191336 
-xmax <- 9.218927 
-ymin <- 45.53769
-ymax <- 45.55274 
+xmin <- 5.996773 # 4.177083 
+xmax <- 6.468209 # 5.582837 
+ymin <- 51.80702 # 50.55804
+ymax <- 52.43639 # 52.03919
+
+e <- mask(b_vrt, e)
+
 e <- extent(c(xmin,xmax,ymin,ymax))
 
 cr <- crop(x = b_vrt, y = e)
@@ -207,7 +270,8 @@ names(b_vrt) <- basename(df_probav_sm$fpath)
 names(b_vrt) <- paste(probav_sm_dir, names(b_vrt), sep= "")
 print(b_vrt)
 
-#plotRGB(b_vrt, 9, 8, 7, stretch='lin')
+plotRGB(b_vrt, 9, 8, 7, stretch='lin')
+
 
 # --- get metrics ---  #
 cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
@@ -229,7 +293,7 @@ ff <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120
 
 
 
-m <- matrix(x[1], nrow= length(bands), ncol=length(dates))
+#m <- matrix(x[1], nrow= length(bands), ncol=length(dates))
 
 
 test <- calc(x = b_vrt, fun = smoothLoess, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("QC"), span=0.3 )
@@ -244,8 +308,11 @@ round(d, digits = 3)
 # No scale
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                       overwrite=T, span=0.3, scale_f = NULL,
-                                      cf_bands = c(1,3), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
+                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      filename = out_name, df_probav_sm = df_probav_sm, order = 1, datatype="INT2S")
+
+
+
 
 # Scaled
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
