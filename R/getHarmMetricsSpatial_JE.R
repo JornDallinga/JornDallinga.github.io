@@ -1,6 +1,8 @@
 getHarmMetricsSpatial_JE <- function(x, n_years=NULL, order=1, robust=FALSE,
-                                     cf_bands, thresholds=c(-80, Inf, -120, 120) , span=0.3, scale_f=NULL, minrows=1, mc.cores=1, logfile, probav_sm_dir, ...) {
-  s_info <- getProbaVinfo(probav_sm_dir, pattern =  bands_sel, tiles = tiles[tn])
+                                     cf_bands, thresholds=c(-80, Inf, -120, 120) , span=0.3, scale_f=NULL, minrows=1, mc.cores=1, logfile, df_probav_sm, ...) {
+  
+  #s_info <- getProbaVinfo(probav_sm_dir, pattern =  bands_sel, tiles = tiles[tn])
+  s_info <- df_probav_sm
   #s_info <- getProbaVinfo(names(x))
   bands <- s_info[s_info$date == s_info$date[1], 'band']
   dates <- s_info[s_info$band == bands[1], 'date']

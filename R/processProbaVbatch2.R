@@ -1,4 +1,4 @@
-processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL, QC_val = QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
+processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NULL, end_date=NULL, QC_val = QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
   #x <- l0_dir
   if (!is.character(x)) {
     stop('x needs to be of class character')
@@ -14,11 +14,11 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_d=NULL,
     x <- subset(info, info$tile %in% tiles)
     # x <- x[info$tile %in% tiles]
   }
-  if (!is.null(start_d)) {
-    x <- subset(x, x$date >= start_d)
+  if (!is.null(end_date) & !is.null(start_date)) {
+    x <- subset(x, x$date >= start_date & x$date <= end_date)
     
   }
-  
+
   x <- paste0(l0_dir,'/',x$fpath)
   
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
