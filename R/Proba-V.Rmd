@@ -65,6 +65,7 @@ source("R/getHarmMetricsSpatial_JE.R")
 source("R/mapDistance2Loess2.R")
 source("R/CleanProbaV2.R")
 source("R/timeVrtProbaV2.R")
+source("R/cloud_filter.R")
 
 ```
 
@@ -272,6 +273,63 @@ cr <- crop(x = b_vrt, y = e)
 b_vrt <- cr
 plot(b_vrt)
 ```
+
+
+## cloudfilter example
+
+```{r}
+# Select all the bands for a false color image
+bands_select <- '(BLUE|SWIR|NIR0|RED0)' 
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+
+
+# run process batch on unfiltered data
+# Here we change the QC_value to select all the cells, including the cloud values.
+# Write the clouds to a new directory, so it wont mess up the original file
+# Select one point in time, lets say: 2015-04-16
+cloud_dir <- "/rsdata/probav/sm_Withclouds"
+
+# we wont use NDVI for the cloud filter in this example, just the radiometry is needed
+patterns <- c('RADIOMETRY.tif$')
+processProbaVbatch2(l0_dir, 
+                    pattern = patterns, tiles = tiles, start_date = "2015-04-16", end_date = "2015-04-16",
+                    QC_val = 1:300, outdir = file.path(paste0(getwd(),cloud_dir, collapse ="")),
+                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    overwrite=F)
+
+# select dir with clouds
+probav_sm_dir <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm_Withclouds/"
+
+# load the image in our virtual raster stack
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-04-16", end_date = "2015-04-16")
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2015-04-16", end_date = "2015-04-16")
+
+# set extent
+xmin <- 5.996773
+xmax <- 6.468209
+ymin <- 51.80702
+ymax <- 52.43639 
+
+# crop the images
+e <- extent(c(xmin,xmax,ymin,ymax))
+b_vrt_cloud <- crop(x = b_vrt, y = e)
+
+# plot a false color image
+plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
+
+# set variables
+# threshold for blue
+thresholds=c(-80, Inf)
+span = 0.3
+
+# set output filename
+out_name <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/cloud_filter.envi"
+out1 <- mcCalc(x=b_vrt, fun=cloud_filter, minrows = 15, mc.cores = mc.cores, logfile=logfile, out_name = out_name, overwrite = T, mc.preschedule = FALSE)
+
+
+```
+
+
 
 ## check layers, bands, blocks and cores
 
