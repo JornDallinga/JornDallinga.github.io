@@ -1,6 +1,7 @@
-cloud_filter <- function(x){
+cloud_filter <- function(x, dates = dates, thresholds = NA, span = 0.3, cf_bands = cf_bands){
   # smooth loess and getHarmMetrics
   m <- matrix(x, nrow= length(bands), ncol=length(dates))
+  thresholds <- matrix(thresholds, nrow=2)
   #qcb <- smoothLoess(m, dates = dates, thresholds=NULL, res_type = "QC", span=0.3)
   if (!all(is.na(m[1,]))) {
     res <- try({

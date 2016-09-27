@@ -130,55 +130,62 @@ out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_
 rasterOptions(todisk = F, progress = "text",
               tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
 
-bands_select <- '(SWIR)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
 b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-10-12", end_date = "2015-10-26")
 df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2014-10-12", end_date = "2015-10-26")
 
-xmin <- 4.177083 # 4.177083
-xmax <- 5.582837 # 5.582837
-ymin <- 50.55804 # 50.55804
-ymax <- 52.03919 # 52.03919
+xmin <- 5.996773 # 4.177083 
+xmax <- 6.468209 # 5.582837 
+ymin <- 51.80702 # 50.55804
+ymax <- 52.43639 # 52.03919
 
 e <- extent(c(xmin,xmax,ymin,ymax))
 cr <- crop(x = b_vrt, y = e)
 b_vrt <- cr
 
-cf_bands = c(1)
-thresholds=c(-120, 120)
-thresholds <- matrix(thresholds, nrow=2)
+#cf_bands = c(1,2)
+#thresholds=c(-80, Inf, -120, 120)
+#thresholds <- matrix(thresholds, nrow=2)
 #
-s_info <- df_probav_sm
+
+
+# No scale
+system.time(b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+                                                  overwrite=T, span=0.3, scale_f = NULL,
+                                                  cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
+                                                  filename = out_name, df_probav_sm = df_probav_sm, order = 1, datatype="INT2S"))
+
+#s_info <- df_probav_sm
 #s_info <- getProbaVinfo(names(x))
-bands <- s_info[s_info$date == s_info$date[1], 'band']
-dates <- s_info[s_info$band == bands[1], 'date']
-ydays <- s_info[s_info$band == bands[1], 'yday']
-#
+#bands <- s_info[s_info$date == s_info$date[1], 'band']
+#dates <- s_info[s_info$band == bands[1], 'date']
+#ydays <- s_info[s_info$band == bands[1], 'yday']
+##
 
-
-fun1 <- function(x){
-  # smooth loess and getHarmMetrics
-  m <- matrix(x, nrow= length(bands), ncol=length(dates))
-  #qcb <- smoothLoess(m, dates = dates, thresholds=NULL, res_type = "QC", span=0.3)
-  if (!all(is.na(m[1,]))) {
-    res <- try({
-      # smooth loess on all cf bands, then combine
-      qc <- foreach(bn = 1:length(cf_bands), .combine='&') %do% {
-        qcb <-   smoothLoess(m[cf_bands[bn],], dates = dates, threshold = thresholds[,bn],
-                             res_type = "QC", span=span)
-      }
-    })  
-    
-    if(class(res) == 'try-error') {
-      res <- rep(NA_integer_, length(dates))
-    }
-  } else {
-    res <- rep(NA_integer_, length(dates))
-  }
-  
-  return(res)
-}
-
-out_name <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/test.envi"
-mcCalc(x=b_vrt, fun=fun1, minrows = 15, mc.cores = mc.cores, logfile=logfile, out_name = out_name, overwrite = T, mc.preschedule = FALSE)
+# fun1 <- function(x){
+#   # smooth loess and getHarmMetrics
+#   m <- matrix(x, nrow= length(bands), ncol=length(dates))
+#   #qcb <- smoothLoess(m, dates = dates, thresholds=NULL, res_type = "QC", span=0.3)
+#   if (!all(is.na(m[1,]))) {
+#     res <- try({
+#       # smooth loess on all cf bands, then combine
+#       qc <- foreach(bn = 1:length(cf_bands), .combine='&') %do% {
+#         qcb <-   smoothLoess(m[cf_bands[bn],], dates = dates, threshold = thresholds[,bn],
+#                              res_type = "QC", span=span)
+#       }
+#     })  
+#     
+#     if(class(res) == 'try-error') {
+#       res <- rep(NA_integer_, length(dates))
+#     }
+#   } else {
+#     res <- rep(NA_integer_, length(dates))
+#   }
+#   
+#   return(res)
+# }
+# 
+# out_name <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/test.envi"
+# mcCalc(x=b_vrt, fun=fun1, minrows = 15, mc.cores = mc.cores, logfile=logfile, out_name = out_name, overwrite = T, mc.preschedule = FALSE)
