@@ -183,7 +183,7 @@ gdalinfo(version = T)
 
 ## Select the bands to use in sequential functions
 bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
-bands_select <- '(BLUE)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+#bands_select <- '(BLUE)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
@@ -270,7 +270,7 @@ e <- extent(c(xmin,xmax,ymin,ymax))
 
 cr <- crop(x = b_vrt, y = e)
 b_vrt <- cr
-plot(b_vrt)
+plot(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_BLUE_sm.tif)
 
 names(b_vrt) <- basename(df_probav_sm$fpath)
 names(b_vrt) <- paste(probav_sm_dir, names(b_vrt), sep= "")
@@ -312,10 +312,10 @@ d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1
 round(d, digits = 3)
 
 # No scale
-b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+system.time(b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                       overwrite=T, span=0.3, scale_f = NULL,
                                       cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, df_probav_sm = df_probav_sm, order = 1, datatype="INT2S")
+                                      filename = out_name, df_probav_sm = df_probav_sm, order = 1, datatype="INT2S"))
 
 
 
@@ -342,7 +342,8 @@ r <- raster("/DATA/GEOTIFF/PROBAV_L3_S5_TOC_NDVI_100M/20150301/PROBAV_S5_TOC_201
 
 
 summary(b_metrics)
-b_metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
+#b_metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
+b_metrics <- brick("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
 
 
 # old
