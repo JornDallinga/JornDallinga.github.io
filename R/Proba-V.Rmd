@@ -1,13 +1,17 @@
 ---
 title: "Proba-V"
-author: "Jorn D"
-date: "05-8-2016"
+author: "Jorn Dallinga, PROBA-V package used from Johannes Eberenz"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 Version: "0.3 (updated 27-9)"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    theme: cosmo
+
+
 ---
 
-
-#![WUR logo](http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png)
+#WUR PROBA-V workflow ![WUR logo](http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png)
 
 ```{r, echo=FALSE, message=FALSE}
 library(knitr)
@@ -402,7 +406,7 @@ r3 <- r2
 r3[blue_c_filter == 1] <- 1
 breakpoints <- c(0,2,9999)
 colors <- c("darkred","red")
-par(mfrow=c(1,3))
+par(mfrow=c(1,3), layout(matrix(1:6, 1,1, byrow = TRUE)))
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plot(r2, col = 'red', legend = F, add = T)
@@ -462,4 +466,10 @@ b_metrics
 # plotting metrics
 plot(b_metrics)
 ```
+
+```{r}
+
+```
+
+[creative commens](https://creativecommons.org/licenses/by-sa/4.0/) ![CC logo](https://i.creativecommons.org/l/by-sa/4.0/80x15.png)
 
