@@ -77,23 +77,31 @@ data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
 
 # ----------------------------------------- Download data --------------------------------------------
 # get coords
-x <- 10.00
-y <- 8.00
+x <- -11.00
+y <- 9.00
 
 # get tile number
 t <- probaVTileFromCoords(x, y)
-
+t
 # Lets try wget
 u_name <- readline("Type the username:")
 p_word <- readline("Type the password:")
 
-dirloc <- paste(getwd(), '/2015/', sep = "")
-wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+# needed tiles X16Y06....X19Y06
+
+dirloc <- paste(getwd(), '/rsdata/probav/download/2014/', sep = "")
+dirloc 
+wget_string <- paste('wget -A \'*X19Y06*\' -P ', dirloc, ' --no-directories -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
+wget_string <- paste('wget -A \'*X16Y06*\' -P ', dirloc, ' --no-directories -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_100m/S5_TOC_100_m/2016/2/?mode=tif', sep="")
+
+#http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13?coord=-11.0,9.0,-11.1,9.1&mode=tif
+
+#--no-directories
 wget_string
 system(wget_string)
 
 
-
+g<- raster('/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/download/2014/PROBAV_S5_TOC_X19Y06_20160211_100M_V002_NDVI.tif')
 
 
 #### ----------- Preprocessing  -------------------------------------------------
@@ -179,7 +187,7 @@ bands_select <- '(BLUE)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-03-06", end_date = "2015-03-06")
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-03-06", end_date = "2015-12-06")
 df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2014-03-06", end_date = "2015-12-06")
 
 
@@ -248,17 +256,15 @@ e <- drawExtent()
 
 # or
 # temp idea to reduce extent
-xmin <- 9.191336 # 4.177083 
-xmax <- 9.218927 # 5.582837 
-ymin <- 45.53769 # 50.55804
-ymax <- 45.55274 # 52.03919
+#xmin <- 9.191336 # 4.177083 
+#xmax <- 9.218927 # 5.582837 
+#ymin <- 45.53769 # 50.55804
+#ymax <- 45.55274 # 52.03919
 
 xmin <- 5.996773 # 4.177083 
 xmax <- 6.468209 # 5.582837 
 ymin <- 51.80702 # 50.55804
 ymax <- 52.43639 # 52.03919
-
-e <- mask(b_vrt, e)
 
 e <- extent(c(xmin,xmax,ymin,ymax))
 
@@ -308,7 +314,7 @@ round(d, digits = 3)
 # No scale
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                       overwrite=T, span=0.3, scale_f = NULL,
-                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
                                       filename = out_name, df_probav_sm = df_probav_sm, order = 1, datatype="INT2S")
 
 
@@ -317,7 +323,7 @@ b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = m
 # Scaled
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                       overwrite=T, span=0.3, scale_f = c(10,100,10),
-                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
                                       filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
 
 
@@ -336,7 +342,7 @@ r <- raster("/DATA/GEOTIFF/PROBAV_L3_S5_TOC_NDVI_100M/20150301/PROBAV_S5_TOC_201
 
 
 summary(b_metrics)
-Metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
+b_metrics <- readGDAL("/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/metrics/X18Y02_harm_lm2_loess_03_scaled.envi") 
 
 
 # old
@@ -382,7 +388,7 @@ rr <- raster(filename)
 
 #### ------------- extract train data --------------------------------
 # example: cleaned dataset from Tsendbazar 2015
-pnt_tsed <- readOGR(file.path(data_path, "/auxdata/lc_ref/tsendbazar2015"), "pnt_ref_africa_tsendbazar", stringsAsFactors = F)
+pnt_tsed <- readOGR(file.path(getwd(), "rsdata/ref_data"), "ref_Glc2ViirsStepNmoGeowikiGlob_point_africa", stringsAsFactors = F)
 
 # extract per tile ------------------#
 tiles <- c("X16Y06") # ..., "X17Y06", "X18Y06", "X19Y06")
