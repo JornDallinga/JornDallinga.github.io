@@ -183,7 +183,7 @@ gdalinfo(version = T)
 
 ## Select the bands to use in sequential functions
 bands_select <- '(BLUE|SWIR|NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
-bands_select <- '(BLUE)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- '(NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
@@ -289,12 +289,11 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 
 # get single cell with dates preserved
 
-#z <- zoo(c(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif[2]), getZ(b_vrt$PROBAV_S5_TOC_X18Y02_20150301_100M_V001_NDVI_sm.tif))
-z <- zoo(c(b_vrt[1]), getZ(b_vrt))
+z <- zoo(c(b_vrt[50000]), getZ(b_vrt))
 plot(z)
 
 
-f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,threshold=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
+f <- smoothLoess(tsx = z, QC_good=NULL,  res_type=c("all"), span=0.3)
 ff <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type= c("distance", "sd_distance", "all", "filled", "omit", "QC"), span=0.3)
 
 
@@ -389,16 +388,23 @@ rr <- raster(filename)
 #### ------------- extract train data --------------------------------
 # example: cleaned dataset from Tsendbazar 2015
 pnt_tsed <- readOGR(file.path(getwd(), "rsdata/ref_data"), "ref_Glc2ViirsStepNmoGeowikiGlob_point_africa", stringsAsFactors = F)
+pnt_JD <- readOGR(file.path(getwd(), "rsdata/ref_data"), "Ref_dataJD", stringsAsFactors = F)
+names(pnt_JD) <- c("id", "Description", "ID_nr", "x", "y", "z", "m")
+pnt_JD[,-(4:7)]
+pts=as.data.frame(pnt_JD)
+coordinates(pts) <- ~x+y
+projection(pts) <- proj4string(pnt_JD)
+pnt_JD <- pts
 
 # extract per tile ------------------#
-tiles <- c("X16Y06") # ..., "X17Y06", "X18Y06", "X19Y06")
+tiles <- c("X18Y02") # ..., "X17Y06", "X18Y06", "X19Y06")
 
 registerDoParallel(min(4, length(tiles)))
 df_covs_tsed <- foreach(tile=tiles, .combine=rbind, .inorder = T) %dopar% {
   print(tile)
-  b_metrics <- brick(paste0(data_path, "/rsdata/probav/metrics/", tile,"_harm_lm2_loess_03_scaled.envi"))
+  b_metrics <- brick(paste0(getwd(), "/rsdata/probav/metrics/", tile,"_harm_lm2_loess_03_scaled.envi"))
   print("loaded")
-  df_metrics_tile  <- extract(b_metrics, pnt_tsed, cellnumbers=T, df=T)
+  df_metrics_tile  <- extract(b_metrics, pnt_JD, cellnumbers=T, df=T)
   df_metrics_tile <- cbind(tile=rep(tile, nrow(df_metrics_tile)), df_metrics_tile)
   df_metrics_tile  <- na.exclude(df_metrics_tile)
   # for spatial segmentation
@@ -411,7 +417,7 @@ df_covs_tsed <- foreach(tile=tiles, .combine=rbind, .inorder = T) %dopar% {
   df_covs_tile <- df_metrics_tile
   print(names(df_covs_tile))
   print( nrow(df_covs_tile))
-  rm(df_shape, df_stats, b_clumps, b_metrics)
+  #rm(df_shape, df_stats, b_clumps, b_metrics)
   df_covs_tile
 }
 
@@ -420,41 +426,46 @@ df_ref_tsed <- pnt_tsed@data[df_covs_tsed$ID,]
 df_model_tsed <- cbind(G9_cl1=df_ref_tsed$G9_cl1, df_covs_tsed)
 # good to save this!
 
+# JD
+df_ref_JD <- pnt_JD@data[df_covs_tsed$ID,]
+df_model_JD <- cbind(ID_nr=df_ref_tsed$ID_nr, df_covs_tsed)
+# good to save this!
+
 #### ------------- ranger model ------------------------------------
 # note that ranger doesn't run parallel on windows
 require(ranger)
-tiles <- c("X16Y06") #..., "X17Y06", "X18Y06", "X19Y06")
+tiles <- c("X18Y02") #..., "X17Y06", "X18Y06", "X19Y06")
 
 # exclude some classes
 df_model_tsed <- subset(df_model_tsed, G9_cl1 <= 5)
 # exclude NAs
-cc <- complete.cases(df_model_tsed)
-table(df_model_tsed$G9_cl1[cc])
-names(df_model_tsed)
+cc <- complete.cases(df_model_JD)
+table(df_model_JD$ID_nr[cc])
+names(df_model_JD)
 
-df_model_tsed$LC <- factor(df_model_tsed$G9_cl1, labels = c("Forest","Shrubland", "Grassland", "Cropland", "Bare"))#, "Wetland", "Urban",  "Water"))
-table(df_model_tsed$LC[cc])
-glimpse(df_model_tsed[cc, -(2:4)])
+df_model_JD$LC <- factor(df_model_JD$ID_nr, labels = c("Forest","Agriculture", "Bare", "Water"))#, "Wetland", "Urban",  "Water")) c("Forest","Shrubland", "Grassland", "Cropland", "Bare")
+table(df_model_JD$LC[cc])
+glimpse(df_model_JD[cc, -(2:4)])
 
 cat("------- ranger ---------")
-ra_tsed <- ranger(LC ~., df_model_tsed[cc, -(1:4)], num.trees=500, write.forest=T,
+ra_JD <- ranger(LC ~., df_model_JD[cc, -(1:4)], num.trees=500, write.forest=T,
                   probability = F, num.threads=10, verbose=T, importance = "impurity")
-saveRDS(ra_tsed, "data/models/ra_tzed_merge5_x16.rds")
-print(ra_tsed)
+saveRDS(ra_JD, "data/models/ra_JD_merge5_x16.rds")
+print(ra_JD)
 #plot(ra_tsed)
 
-ra_tsed <-readRDS("data/models/ra_tzed_merge5_x16.rds")
-ra_tsed$confusion.matrix
+ra_JD <-readRDS("data/models/ra_JD_merge5_x16.rds")
+ra_JD$confusion.matrix
 
 #### ------------- predict -------------------------------------------
 # using ranger
-model <- readRDS("data/models/ra_tsed_x16.rds")
-tiles <- c("X16Y06")
+model <- readRDS("data/models/ra_JD_merge5_x16.rds")
+tiles <- c("X18Y02")
 
 for (tile in tiles){
   print(paste0("--------------", tile, "-------------------"))
   # -------------------------------data----------------------------------#
-  b_metrics <- brick(paste0(data_path, "/rsdata/probav/metrics/", tile,"_harm_lm2_loess_03_scaled.envi"))
+  b_metrics <- brick(paste0(getwd(), "/rsdata/probav/metrics/", tile,"_harm_lm2_loess_03_scaled.envi"))
   # the follwoing lines are neede to extract manually spatial segments
   # b_clumps <- raster(paste0(data_path, "/rsdata/probav/test/seg/", tile,"_clumps60.img"), RAT=F)
   #  print('shape')
@@ -466,17 +477,17 @@ for (tile in tiles){
   # -------------------------------predict----------------------------------#
   print("---predict--------------")
   
-  out_name <- paste0(data_path, "/rsdata/probav/results/tsesd/pred_tsed_", tile,  ".tif")
+  out_name <- paste0(getwd(), "/rsdata/probav/results/JD/pred_tsed_", tile,  ".tif")
   
   # this is apralle over mcCalc, additionally ranegr predict can use multiple threads
   # with larger datasets RAM becomes the bottleneck. Therefore it can eb better to use less
   # cores for calc and more for ranger
   
-  pred_tsed <- mcPredictSpatial(model,  b_metrics, b_clumps=NULL, df_clumps = NULL, type='response',
+  pred_JD <- mcPredictSpatial(model,  b_metrics, b_clumps=NULL, df_clumps = NULL, type='response',
                                 mc.cores = 5, ranger_threads = 1, minrows = 12, logfile = logfile,
                                 datatype ="INT1U", of ="GTiff", out_name = out_name)
   
-  print(pred_tsed)
+  print(pred_JD)
 }
 
-
+check <- raster("rsdata/probav/results/JD/pred_tsed_X18Y02.tif")
