@@ -2,7 +2,7 @@
 title: "Proba-V"
 author: "Jorn Dallinga, PROBA-V package used from Johannes Eberenz"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-Version: "0.3 (updated 27-9)"
+Version: "0.4 (updated 28-9)"
 output: 
   html_document:
     toc: true
@@ -16,27 +16,32 @@ output:
 ```{r, echo=FALSE, message=FALSE}
 library(knitr)
 opts_chunk$set(fig.width=5, fig.align='center', fig.height=5, dpi=72)
+# set the knitR working directory to the same file location as getwd(), in order to maintain the link to R source scripts.
+knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
 ```
 
+# Introduction
 
-```{r}
-getwd()
-```
+"the PROBA-V instrument
 
+ESA is currently preparing the launch of the Sentinel-3 satellites, of which the first one (Sentinel-3A) is foreseen for September 29tn, 2015. The Sentinel missions are developed for the operational needs in land, ocean, and atmospheric monitoring within the European Copernicus programme. However, between the end-of-life of SPOT-VGT and the launch of the Sentinel-3 satellites, a rather large time gap of about 3 years would occur, which would imply a discontinuation of the vegetation monitoring time series.
+
+In order to preserve this observational continuity, Belgium decided to build a small satellite mission based on the successful ESA PROBA expertise (link is external), using state-of-the-art-technology. PROBA-V (with "V" standing for Vegetation) was designed by a full Belgian consortium, fulfills all of the vegetation users specifications and is complement to the Sentinel-3 satellites to be launched after PROBA-V.
+
+PROBA-V has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products,  available at 100 m, 300 m, and 1 km. The products can be downloaded from [vito] (www.vito-eodata.be)" [source](http://proba-v.vgt.vito.be/) 
 
 ## Preperation
 
-This script has been tested and runs on a LINUX Centos machine, but might require some tweaking if used on other OS or versions. 
+This script has been tested and runs on a LINUX Centos machine located on the ESA cloud toolbox, but might require some tweaking if used on other OS or versions. Most functions are designed to run parallel on multi-core machines, such as the cloud toolbox. Al though this example script uses a small case study throughout the tutorial, when extending the functions to larger areas, system time could become significantly slower (depending on how many cores you have to your disposal).
 
 System on which the script has been tested:
 ```{r, echo=F, results= 'hold'}
 Sys.info()['sysname']
 .Platform$OS.type
-version$os ## or R.version$os
+version$os
 ```
 
-
-The data used within these scripts can be downloaded from http://proba-v.vgt.vito.be/ website. Lets start with loading the required libaries and packages to illustrate a workflow on working with the PROBA-V data.
+The data used within these scripts can be downloaded from the [vito](http://proba-v.vgt.vito.be/) website. Lets start with loading the required libraries and packages to illustrate a workflow on working with the PROBA-V data. Additionally, we have to set the library path if this has not been set previously. When working from the cloud toolbox, errors could occur with loading packages when the library path has not been added.
 
 ```{r, message=F, warning=F}
 # add additional libary path
@@ -54,37 +59,47 @@ library(probaV)
 library(tools)
 library(parallel)
 library(zoo)
-
 ```
 
 
-
-```{r, echo=F}
-# set the knitR working directory to the same file location as getwd(), in order to maintain the link to R source scripts.
-knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
-
-```
-
-```{r, message=F, warning=F}
+```{r, message=F, warning=F, eval=F}
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/processProbaVbatch2.R")
 source("R/getHarmMetricsSpatial_JE.R")
-source("R/mapDistance2Loess2.R")
 source("R/CleanProbaV2.R")
 source("R/timeVrtProbaV2.R")
 source("R/cloud_filter.R")
+```
 
+The Proba-V package used can be viewed [here](https://github.com/johanez/probaV). Many fixes, including spelling, and further updating of the package is still underway. Therefore, we download and source the fixed scripts directly using the following 'source_ttps' function from another github repository. 
+
+```{r}
+source_https <- function(url, ...) {
+  # load package
+  require(RCurl)
+ 
+  # parse and evaluate each .R script
+  sapply(c(url, ...), function(u) {
+    eval(parse(text = getURL(u, followlocation = TRUE, cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl"))), envir = .GlobalEnv)
+  })
+}
+
+source_https("https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/processProbaVbatch2.R",
+             "https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/getHarmMetricsSpatial_JE.R",
+             "https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/CleanProbaV2.R",
+             "https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/timeVrtProbaV2.R",
+             "https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/cloud_filter.R")
 ```
 
 ## Data download
 
-Lets download some data! Below an example on how to download the PROBA-V tiles by using coordinates. 
+This example script uses data existing on the cloud toolbox and follows an existing directory structure. Downloading ProvaV data will not create that directory structure yet. Thus, this script will work when following the ProbaV directory structure on the cloud toolbox, but not yet with downloading the data manually to a certain directory. But if you would like to know how to download the ProbaV data, below follows an example.
+Lets download the PROBA-V tiles by using coordinates! 
 
 ```{r}
-
 # Select the location for which you wish to download the PROBA-V  tiles for. 
-x <- 10.00
-y <- 8.00
+x <- 10.00 # Longitude
+y <- 8.00 # Latitude
 
 # In order to download the correct tile numbers, we use coordinates to convert to the tile number
 tile <- probaVTileFromCoords(x, y)
@@ -92,30 +107,28 @@ tile_str <- paste("\'*",tile,"*\'", sep ="")
 
 ```
 
-```{r, results='hide'}
+To download data from the PROBA-V vito website, we need to be a registerd user (free). If you dont allready have an account, feel free to make one by following this [link](http://www.vito-eodata.be/PDF/portal/Application.html#Home). Assign the username and password to a variable, which you can enter below.
 
-# To download data from the PROBA-V vito website, we need to be a registerd user (free). We need the username and password, which you can enter below.
+```{r, results='hide'}
 u_name <- readline("Type the username:")
 p_word <- readline("Type the password:")
-
-
+```
+```{r}
+# enter the file directory for the download location
+dirloc <- paste(getwd(), '/2015/', sep = "")
+# Create file directory if it does not exist yet
+dir.create(file.path(dirloc), showWarnings = FALSE)
 ```
 
+Use wget to download the data. wget has be passed directly in the terminal. Therefore, we pass the string to the system command. In this example, the link in the string will have to be adjusted manually to your request. The dates at the end of the http adres below, allow you to download for a specific year, month and/or day. If you wish to download all ProbaV data for a specific year (e.g. 2016), then change the dates to '2016/?/?mode=tif'. The data will be downloaded into the directory set in the previous code (dirloc). For more examples on how to download ProbaV data on different operating systems, please follow this [link](http://www.vito-eodata.be/PDF/image/Data_pool_manual.pdf).
 
 ```{r}
-# enter download location:
-dirloc <- paste(getwd(), '/2015/', sep = "")
+wget_string <- paste('wget -A ', tile_str ,' .tif' , ' -P ', dirloc, ' --no-directories -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_100m/S5_TOC_100_m/2016/2/1/?mode=tif', sep="")
 
-# Use wget to download the data. wget has be used directly in the terminal. Therefore, we pass the string to the system command.
-wget_string <- paste('wget -A ', tile_str ,' -P ', dirloc, ' -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_300m/S1_TOC_-_300_m/2015/7/13/PV_S1_TOC-20150713_333M_V001/?mode=tif', sep="")
-
+# check for output of the download string
 print(wget_string)
-
 ```
-
-
 ```{r, eval=FALSE}
-
 # pass the string to the terminal directly from R.
 system(wget_string)
 
@@ -123,11 +136,7 @@ system(wget_string)
 
 ## Preprocessing
 
----- check  downloaded data
-Only GeoTIFF is accepted
-The files should be stored in the folder structure used by vito
-(One foler per date contains files for all tiles).
-
+Lets start with the preprocessing of the data. Remember, the following parts of the script only work by following the ProbaV directory structure on the cloud toolbox. Provided by Vito or you can download manually, but the files should be stored in the folder structure used by vito (One folder per date contains files for all tiles).
 
 ```{r, echo=F}
 
@@ -135,17 +144,14 @@ The files should be stored in the folder structure used by vito
 l0_dir <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
 ```
 
-start by setting our data path which contains the downloaded files
+start by setting our data path which contains the downloaded files. The following section loops through the downloaded data folder and retrieves the product information, such as tiles and acquisition dates. Since the we only work with .tif files (for now), we add '.tif$' to the pattern selection.
 
 ```{r, eval=F}
 # variable setting for data path
 10_dir <- "set data path" 
 # if you manually downloaded the data
 10_dir <- dirloc
-
 ```
-
-The following function searches through the downloaded data folder and retrieves the product information, such as tiles and acquisition dates. Since the following functions only work on .tif files, we add '.tif$' to the pattern selection.
 ```{r}
 df_probav_down <- getProbaVinfo(l0_dir, pattern = ".tif$")
 
@@ -154,18 +160,20 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ```
 
 ## clean data 
-The function 'getProbaVQClist' creates a dataframe of state mask (SM) codes based on the quality indicators in the Status Map dataset. It provides an overview of clear codes per channel. 
+The function 'getProbaVQClist' creates a dataframe of state mask (SM) codes based on the quality indicators in the Status Map dataset. It provides an overview of clear codes per channel. Explanation on these SM codes can be found in the [ProbaV Product User Manual](http://proba-v.vgt.vito.be/sites/default/files/PROBAV-Products_User_Manual_v1.2.pdf), which can also be downloaded directly from the Vito [website](http://www.vito-eodata.be/PDF/portal/Application.html#Home).
+
+For clear pixel selection, we use the SM codes with 'clear_all', which means that a certain pixel is not marked as shadow, cloud, ice or sea. Additionally, it selects only the 'good' quality pixels of the radiometric bands (SWIR, NIR, RED, BLUE).
+
 ```{r}
 # Top of dataframe showing SM codes. 
 head(getProbaVQClist()$all_bits)
-# For clear pixel selection, we use the SM codes with 'clear_all', which means that a certain pixel is not marked as shadow, cloud, ice or sea. Additionally, it selects only the 'good' quality pixels of the radiometric bands (SWIR, NIR, RED, BLUE).
+# Select quality control value with clear channels
 QC_val <- getProbaVQClist()$clear_all
-
-# The QC_variable now stores the high quality value:
-QC_val
+# The QC_val now stores the high quality value:
+print(paste('The Quality control value: ',QC_val), sep = "")
 ```
 
-Lets split the radiometry .tif into single layers (SWIR, NIR, RED, BLUE)
+The Radiometry brick contains 4 raster layersLets split the radiometry .tif into single layers (SWIR, NIR, RED, BLUE)
 ```{r}
 # First, select the radiometry .tif files from the download folder and which tiles to use
 patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$"
@@ -269,10 +277,10 @@ Create a virtual stack from selected bands
 
 ## set temp extent
 ```{r}
-xmin <- 9.191336 
-xmax <- 9.218927 
-ymin <- 45.53769
-ymax <- 45.55274 
+xmin <- 5.996773
+xmax <- 6.468209
+ymin <- 51.80702
+ymax <- 52.43639 
 e <- extent(c(xmin,xmax,ymin,ymax))
 
 # crop to extent
@@ -427,9 +435,9 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 
 
 ## create time series using zoo
-```{r,eval=F}
+```{r,eval=T}
 # Select first pixel of our raster stack
-z <- zoo(c(b_vrt[1]), getZ(b_vrt))
+z <- zoo(c(b_vrt[50000]), getZ(b_vrt))
 
 # use smoothloes to create time series
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
@@ -437,7 +445,7 @@ plot(f)
 ```
 
 ## get metrics from smoothloes cleaned data
-```{r,eval=F}
+```{r,eval=T}
 d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
 d
 ```
@@ -448,7 +456,7 @@ d
 # No scale
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
                                       overwrite=T, span=0.3,
-                                      cf_bands = c(1), thresholds=c(-80, Inf, -120, 120),
+                                      cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
                                       filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
 ```
 
