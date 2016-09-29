@@ -26,9 +26,9 @@ knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
 
 ESA is currently preparing the launch of the Sentinel-3 satellites, of which the first one (Sentinel-3A) is foreseen for September 29tn, 2015. The Sentinel missions are developed for the operational needs in land, ocean, and atmospheric monitoring within the European Copernicus programme. However, between the end-of-life of SPOT-VGT and the launch of the Sentinel-3 satellites, a rather large time gap of about 3 years would occur, which would imply a discontinuation of the vegetation monitoring time series.
 
-In order to preserve this observational continuity, Belgium decided to build a small satellite mission based on the successful ESA PROBA expertise (link is external), using state-of-the-art-technology. PROBA-V (with "V" standing for Vegetation) was designed by a full Belgian consortium, fulfills all of the vegetation users specifications and is complement to the Sentinel-3 satellites to be launched after PROBA-V.
+In order to preserve this observational continuity, Belgium decided to build a small satellite mission based on the successful ESA PROBA expertise, using state-of-the-art-technology. PROBA-V (with "V" standing for Vegetation) was designed by a full Belgian consortium, fulfills all of the vegetation users specifications and is complement to the Sentinel-3 satellites to be launched after PROBA-V.
 
-PROBA-V has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products,  available at 100 m, 300 m, and 1 km. The products can be downloaded from [vito] (www.vito-eodata.be)" [source](http://proba-v.vgt.vito.be/) 
+PROBA-V has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products,  available at 100 m, 300 m, and 1 km. The products can be downloaded from [vito](www.vito-eodata.be)" [source](http://proba-v.vgt.vito.be/) 
 
 ## Preperation
 
@@ -458,8 +458,9 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 
 
 ## create time series using zoo
+
 ```{r,eval=T}
-# Select first pixel of our raster stack
+# Select random pixel of our raster stack
 z <- zoo(c(b_vrt[50000]), getZ(b_vrt))
 
 # use smoothloes to create time series
@@ -467,20 +468,28 @@ f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120,
 plot(f)
 ```
 
-## get metrics from smoothloes cleaned data
+## get metrics from time series
+
+We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a liner harmonic model to the time series.
+The coefficients of this model are then used as metrics for overall level and seasonality.
+
 ```{r,eval=T}
 d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
 d
 ```
 
+## Run metrics with a raster brick output
 
-## Run metrics with a raster output
+The following function runs the getHarmMetrics to our virtual raster brick and returns the model coefficients. 
+
 ```{r, eval=F}
 # No scale
-b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores, logfile=logfile,
+b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores,
+                                      logfile=logfile,
                                       overwrite=T, span=0.3,
                                       cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, probav_sm_dir = probav_sm_dir, order = 1, datatype="INT2S")
+                                      filename = out_name, probav_sm_dir = probav_sm_dir, 
+                                      order = 1, datatype="INT2S")
 ```
 
 
@@ -492,7 +501,6 @@ b_metrics
 
 # band order
 # names c("min", "max", "intercept", names(lmh$coefficients)[-1])
-# 
 
 # plotting metrics
 plot(b_metrics)
@@ -559,7 +567,7 @@ table(df_model_JD$LC[cc])
 glimpse(df_model_JD[cc, -(2:4)])
 ```
 
-Run ranger
+"Ranger is a fast implementation of random forest (Breiman 2001) or recursive partitioning, particularly suited for high dimensional data. Classification, regression, probability estimation and survival forests are supported. Classification and regression forests are implemented as in the original Random Forest (Breiman 2001), survival forests as in Random Survival Forests (Ishwaran et al. 2008). For probability estimation forests see Malley et al. (2012)." [source](https://github.com/imbs-hl/ranger)
 
 ```{r}
 # run ranger on Land cover classification
@@ -572,7 +580,7 @@ saveRDS(ra_JD, "data/models/ra_JD_merge5_x16.rds")
 print(ra_JD)
 ```
 
-Classifying LC classes.
+
 ```{r, eval=F}
 #### ------------- predict -------------------------------------------
 # using ranger
