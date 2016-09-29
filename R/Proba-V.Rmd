@@ -73,7 +73,7 @@ source("R/cloud_filter.R")
 
 The Proba-V package used can be viewed [here](https://github.com/johanez/probaV). Many fixes, including spelling, and further updating of the package is still underway. Therefore, we download and source the fixed scripts directly using the following 'source_ttps' function from another github repository. 
 
-```{r}
+```{r,echo=T, results='hide'}
 source_https <- function(url, ...) {
   # load package
   require(RCurl)
@@ -131,7 +131,6 @@ print(wget_string)
 ```{r, eval=FALSE}
 # pass the string to the terminal directly from R.
 system(wget_string)
-
 ```
 
 ## Preprocessing
@@ -173,12 +172,12 @@ QC_val <- getProbaVQClist()$clear_all
 print(paste('The Quality control value: ',QC_val), sep = "")
 ```
 
-The Radiometry brick contains 4 raster layersLets split the radiometry .tif into single layers (SWIR, NIR, RED, BLUE)
+The Radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI bands.
+
 ```{r}
 # First, select the radiometry .tif files from the download folder and which tiles to use
 patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$"
-tiles <- c("X18Y02") #..., "X21Y06")
-# or tiles <- tile
+tiles <- c("X18Y02") # c("X21Y06","X21Y07",...)
 
 # Lets gather the information from the radiometry band using the variables assigned above. 
 head(getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles))
@@ -188,35 +187,47 @@ df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
 nrow(df_in)
 ```
 
+Next step is to keep the quality control values in the data which correspond to the QC_val as result of the 'getProbaVQClist' function. Lets test this on a single date/location. Select a RADIOMETRY.tif or NDVI.tif file from the downloaded data folder and assign it to a variable. 
 
-Next step is to keep the quality control values in the data which correspond to the QC_val as result of the 'getProbaVQClist' function. Lets test this on a single date/location. Select a RADIOMETRY.tif file from the downloaded data folder and assign it to a variable. 
 ```{r}
-# Assign variable to the file.path
-r <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_NDVI.tif"
+# Assign variable from the download location of your Geotiffs. Lets use the NDVI.
+r <- paste(l0_dir, "/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_NDVI.tif", sep = "")
+
 # Assign a file.path (including filename) to which we will write the cleaned data.
-filename <- "/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001.tif"
-
+filename <- paste(getwd(),"/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001.tif", sep = "")
+```
+```{r, eval=F}
 cleanProbaV2(f_data = r, filename=filename, QC_val = QC_val, fill=255, datatype="FLT4S", as.is = F, overwrite = T)
-
 ```
 
+The result is a cleaned raster dataset (right) with only the quality control value (QC_val) selected.
+
 ```{r}
-# The result is a cleaned raster dataset (right) with only the quality control value (QC_val) selected. 
 par(mfrow = c(1, 2))
 plot(raster(r))
 plot(raster(filename))
+par(mfrow = c(1, 1))
 ```
 
 
 ## Proccessing a ProbaV bath
-The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. 
+The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. In order to process both the Radiometry and the NDVI datasets, we will have to run the processProbaVbath function twice, with different patterns.
+
 ```{r, eval=F}
+# Create the required directories
+dir.create("rsdata", showWarnings = FALSE)
+dir.create("rsdata/probav", showWarnings = FALSE)
+dir.create("rsdata/probav/sm2", showWarnings = FALSE)
+
 # How many cores do we have:
 detectCores(all.tests = FALSE, logical = TRUE)
 
+# Select the patterns to match the .tif files you wish to process.
+patterns <- c('RADIOMETRY.tif$') # or "NDVI.tif$"
+
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_d = "2015-10-25",
+                    pattern = patterns, tiles = tiles, start_d = "2015-10-25", end_date = NULL,
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
@@ -225,38 +236,46 @@ processProbaVbatch2(l0_dir,
 ```
 
 ## Input check for next functions
-```{r}
 
-# ----- cehck input --- #
-tn <- 1
+The following section sets the required parameters for the next function, the 'virtual raster stack'. Most of the parameters are pretty basic, or are repeated here as reminder. 
+```{r}
+# ----- check input --- #
+tn <- 1 # tile number (tn) 
 tiles <- c("X18Y02")
+# set directory of the processed files as a result of the processProbaVbatch function
 probav_sm_dir <- file.path(paste0(getwd(),"/rsdata/probav/sm2/", collapse =""))
+# lets retrieve information on the available data that we have selected by setting our parameters.
 df_probav_sm <- getProbaVinfo(probav_sm_dir, pattern =  '_sm.tif$', tiles = tiles[tn])
+# visualize product information, such as bands and acquisition dates. 
 glimpse(df_probav_sm)
 
-# ----- parameters ----#
+# ----- next parameters ----#
+# assign the unique available bands to a variable
 bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
+# assign the acquisition dates to a variable
 dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
+# minrows is a parameter for the coming raster processing functions. It allows you to set the minimal rows that the coming calc functions will apply their algorithm on simultaneously.
 minrows = 15
+# check for available cores and set cores (minus 1)
 mc.cores = detectCores(all.tests = FALSE, logical = TRUE)-1
-#logfile <- paste0("~/PROBA_V/rsdata/lcafrica/logs/metrics_tmp_", tiles[tn], ".log")
+# create directory for the log files
+dir.create("rsdata/probav/logs", showWarnings = FALSE)
+# set log name
 logfile <- file.path(getwd(), paste0("rsdata/probav/logs/", tiles[tn], ".log"))
 
+# create directory for output results
+dir.create("rsdata/probav/metrics", showWarnings = FALSE)
+# create virtual raster stack output name
 vrt_name <- file.path(getwd(), paste0("rsdata/probav/sm2/", tiles[tn], "_",paste0(bands, collapse = "_"), ".vrt"))
+# create output name on the metrics
 out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
-#rasterOptions(maxmemory = 2e+08, chunksize = 2e+08, todisk = F, progress = "window",
-#              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
-
+# set raster options to your requirements
+dir.create("rsdata/probav/temp", showWarnings = FALSE)
 rasterOptions(todisk = F, progress = "text",
               tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
-
-
-# --- buld a vrt ---#
-#(its faster than raster stack!)
-gdalinfo(version = T)
 ```
 
-## Select bands
+### Select bands
 Band selection for the virtual raster stack
 ```{r}
 ## Select the bands to use in sequential functions
@@ -270,6 +289,10 @@ bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 ## virtual stack
 Create a virtual stack from selected bands
 ```{r}
+# --- buld a vrt ---#
+#(its faster than raster stack!)
+gdalinfo(version = T)
+
  b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-02-10", end_date = "2015-10-26")
   df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date ="2014-02-10", end_date = "2015-10-26")
 
@@ -277,13 +300,13 @@ Create a virtual stack from selected bands
 
 ## set temp extent
 ```{r}
-xmin <- 5.996773
-xmax <- 6.468209
-ymin <- 51.80702
-ymax <- 52.43639 
+xmin <- 5.996773 # 4.177083 
+xmax <- 6.468209 # 5.582837 
+ymin <- 51.80702 # 50.55804
+ymax <- 52.43639 # 52.03919
+
 e <- extent(c(xmin,xmax,ymin,ymax))
 
-# crop to extent
 cr <- crop(x = b_vrt, y = e)
 b_vrt <- cr
 plot(b_vrt)
@@ -361,7 +384,7 @@ r2[is.na(r)] <- 9999
 r2[r2 < 9999] <- NA
 # Lets plot the original cloud detection method inbedded within the ProbaV data.
 r2 <- subset(r2,1)
-plot(r2, col = 'red', legend = F)
+plot(r2, col = 'orange', legend = F)
 ```
 
 
@@ -413,11 +436,11 @@ r3 <- r2
 
 r3[blue_c_filter == 1] <- 1
 breakpoints <- c(0,2,9999)
-colors <- c("darkred","red")
+colors <- c("darkred","orange")
 par(mfrow=c(1,3), layout(matrix(1:6, 1,1, byrow = TRUE)))
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
-plot(r2, col = 'red', legend = F, add = T)
+plot(r2, col = 'orange', legend = F, add = T)
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plot(r3,breaks=breakpoints,col=colors, add = T, legend = F)
 par(mfrow=c(1,1))
@@ -475,8 +498,107 @@ b_metrics
 plot(b_metrics)
 ```
 
-```{r}
+## Classification process
 
+Lets classify! Prepare classification data
+```{r}
+pnt_JD <- readOGR(file.path(getwd(), "rsdata/ref_data"), "Ref_dataJD", stringsAsFactors = F)
+names(pnt_JD) <- c("id", "Description", "ID_nr", "x", "y", "z", "m")
+pnt_JD[,-(4:7)]
+pts=as.data.frame(pnt_JD)
+coordinates(pts) <- ~x+y
+projection(pts) <- proj4string(pnt_JD)
+pnt_JD <- pts
+pnt_JD
+
+# plot a false color image with the point reference data.
+plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
+plot(pnt_JD, add = T, col = 'red')
+```
+
+Extract cell value per reference point and create a merged dataframe
+
+```{r}
+# ----------------------- extract per tile ------------------#
+tiles <- c("X18Y02") # ..., "X17Y06", "X18Y06", "X19Y06")
+
+# run parallel processing on tiles
+registerDoParallel(min(4, length(tiles)))
+df_covs_tsed <- foreach(tile=tiles, .combine=rbind, .inorder = T) %dopar% {
+  print(tile)
+  b_metrics <- brick(paste0(getwd(), "/rsdata/probav/metrics/", tile,"_harm_lm2_loess_03_scaled.envi"))
+  print("loaded")
+  df_metrics_tile  <- extract(b_metrics, pnt_JD, cellnumbers=T, df=T)
+  df_metrics_tile <- cbind(tile=rep(tile, nrow(df_metrics_tile)), df_metrics_tile)
+  df_metrics_tile  <- na.exclude(df_metrics_tile)
+  df_covs_tile <- df_metrics_tile
+  print(names(df_covs_tile))
+  print( nrow(df_covs_tile))
+  df_covs_tile
+}
+```
+
+Merged dataframe on ref data and cell values
+```{r}
+# JD
+df_ref_JD <- pnt_JD@data[df_covs_tsed$ID,]
+df_model_JD <- cbind(ID_nr=df_ref_JD$ID_nr, df_covs_tsed)
+# good to save this!
+```
+
+Clear NAs
+```{r}
+# exclude NAs
+cc <- complete.cases(df_model_JD)
+table(df_model_JD$ID_nr[cc])
+names(df_model_JD)
+# assign names to factors
+df_model_JD$LC <- factor(df_model_JD$ID_nr, labels = c("Forest","Agriculture", "Bare", "Water")) 
+# only complete cases
+table(df_model_JD$LC[cc])
+glimpse(df_model_JD[cc, -(2:4)])
+```
+
+Run ranger
+
+```{r}
+# run ranger on Land cover classification
+cat("------- ranger ---------")
+ra_JD <- ranger(LC ~., df_model_JD[cc, -(1:4)], num.trees=500, write.forest=T,
+                  probability = F, num.threads=10, verbose=T, importance = "impurity")
+# save the ranger model
+
+saveRDS(ra_JD, "data/models/ra_JD_merge5_x16.rds")
+print(ra_JD)
+```
+
+Classifying LC classes.
+```{r, eval=F}
+#### ------------- predict -------------------------------------------
+# using ranger
+model <- readRDS("data/models/ra_JD_merge5_x16.rds")
+tiles <- c("X18Y02")
+
+for (tile in tiles){
+  print(paste0("--------------", tile, "-------------------"))
+  # -------------------------------data----------------------------------#
+  b_metrics <- brick(paste0(getwd(), "/rsdata/probav/metrics/", tile,"_harm_lm2_loess_03_scaled.envi"))
+  print("---predict--------------")
+  
+  out_name <- paste0(getwd(), "/rsdata/probav/results/JD/pred_JD_", tile,  ".tif")
+
+  pred_JD <- mcPredictSpatial(model,  b_metrics, b_clumps=NULL, df_clumps = NULL, type='response',
+                                mc.cores = 5, ranger_threads = 1, minrows = 12, logfile = logfile,
+                                datatype ="INT1U", of ="GTiff", out_name = out_name)
+  
+  print(pred_JD)
+}
+```
+
+Check output!
+```{r}
+check <- raster(paste(getwd(),"/rsdata/probav/results/JD/pred_JD_X18Y02.tif", sep=""))
+plot(check)
 ```
 
 [creative commens](https://creativecommons.org/licenses/by-sa/4.0/) ![CC logo](https://i.creativecommons.org/l/by-sa/4.0/80x15.png)
