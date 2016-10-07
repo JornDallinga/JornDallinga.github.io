@@ -12,6 +12,7 @@ if (!require(dplyr)) install.packages('dplyr')
 if (!require(gdalUtils)) install.packages('gdalUtils')
 
 
+
 # devtools might require additional packages. If fails, run in bash (Centos):
 #sudo yum -y install libcurl libcurl-devel
 
@@ -42,6 +43,7 @@ if (!require(probaV)) install.packages('probaV')
 #devtools::install_local("probaV", depend = T) # set WD to the folder location
 
 # install_github('johanez/probaV', dependencies = T)
+if (!require(knitrBootstrap)) install.packages('knitrBootstrap')
 
 library(rgdal)
 library(ranger)
