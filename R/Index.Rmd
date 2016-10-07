@@ -3,12 +3,11 @@ title: "Proba-V"
 author: "Jorn Dallinga, PROBA-V package used from Johannes Eberenz"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 Version: "0.4 (updated 28-9)"
-output: 
-  html_document:
-    toc: true
+output:
+  knitrBootstrap::bootstrap_document:
+    title: "ProbaV" 
     theme: cosmo
-
-
+    menu: FALSE
 ---
 
 #WUR PROBA-V workflow ![WUR logo](http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png)
@@ -20,7 +19,7 @@ opts_chunk$set(fig.width=5, fig.align='center', fig.height=5, dpi=72)
 knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
 ```
 
-# Introduction
+## Introduction
 
 "the PROBA-V instrument
 
