@@ -1,4 +1,4 @@
-timeVrtProbaV2 <- function(x, pattern, stacked_bands=NULL, vrt_name, order_chrono=TRUE, tile=NULL, end_date=NULL, start_date = NULL, return_raster=TRUE){
+timeVrtProbaV2 <- function(x, pattern, stacked_bands=NULL, vrt_name, order_chrono=TRUE, tile=NULL, end_date=NULL, start_date = NULL, return_raster=TRUE, ...){
   
   df_info <- getProbaVinfo(x, pattern)
   if(order_chrono){
@@ -23,7 +23,7 @@ timeVrtProbaV2 <- function(x, pattern, stacked_bands=NULL, vrt_name, order_chron
       
       for (b in 1:4){
         s_out <- gsub(s, pattern = "RADIOMETRY", replacement = c("RED0", "NIR0", "BLUE", "SWIR")[b])
-        gdalUtils::gdalbuildvrt(s, extension(s_out, "vrt"), b=b, overwrite = T, verbose=F)
+        gdalUtils::gdalbuildvrt(s, extension(s_out, "vrt"), b=b, overwrite = T, verbose=F, ...)
       }
       
     }
@@ -35,7 +35,7 @@ timeVrtProbaV2 <- function(x, pattern, stacked_bands=NULL, vrt_name, order_chron
   
   cat("\n building main vrt, layers:", nrow(df_info))
   # new
-  gdalUtils::gdalbuildvrt(paste(x,df_info$fpath, sep = ""), vrt_name, separate = T, overwrite = T, verbose=F)
+  gdalUtils::gdalbuildvrt(paste(x,df_info$fpath, sep = ""), vrt_name, separate = T, overwrite = T, verbose=F, ...)
   # old (does not work)
   # gdalUtils::gdalbuildvrt(df_info$fpath, vrt_name, separate = T, overwrite = T, verbose=F)
   
