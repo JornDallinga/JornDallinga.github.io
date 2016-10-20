@@ -3,7 +3,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
   if (!is.character(x)) {
     stop('x needs to be of class character')
   }
-  
+  x2 <- x
   if(length(x) == 1) {
     
     info <- getProbaVinfo(x, pattern=pattern)
@@ -19,7 +19,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
     
   }
 
-  x <- paste0(l0_dir,'/',x$fpath)
+  x <- paste0(x2,'/',x$fpath)
   
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   
