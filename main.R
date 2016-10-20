@@ -11,19 +11,17 @@ if (!require(ggvis)) install.packages('ggvis', dependencies = T)
 if (!require(dplyr)) install.packages('dplyr')
 if (!require(gdalUtils)) install.packages('gdalUtils')
 
-s
-
 # devtools might require additional packages. If fails, run in bash (Centos):
-#sudo yum -y install libcurl libcurl-devel
-
 # for devtools, CentOS requires the following:
+
+#sudo yum -y install libcurl libcurl-devel
 #sudo yum install libcur*
 #sudo yum install libxml*
 #sudo yum install openssl*
 
 if (!require(devtools)) install.packages('devtools')
 
-
+# rgdal could fail to install on centos. install the following rgdal required applications for a successful instalation of rgdal
 # for rgdal, CentOS requires the following:
 # sudo yum install gdal-devel
 # sudo yum install proj-devel
@@ -37,13 +35,15 @@ if (!require(rgdal)) install.packages('rgdal')
 if (!require(ranger)) install.packages('ranger')
 
 ## probaV
-#if (!require(lubridate)) install.packages('lubridate')
+if (!require(lubridate)) install.packages('lubridate')
 #if (!require(probaV)) install_github('johanez/probaV', dependencies = T)
+if (!require(probaV)) install_github('JornDallinga/probaV', dependencies = T)
 if (!require(probaV)) install.packages('probaV')
 #devtools::install_local("probaV", depend = T) # set WD to the folder location
 
 # install_github('johanez/probaV', dependencies = T)
 if (!require(knitrBootstrap)) install.packages('knitrBootstrap')
+if (!require(zoo)) install.packages('zoo')
 
 library(rgdal)
 library(ranger)
@@ -72,7 +72,10 @@ source("R/getHarmMetricsSpatial_JE.R")
 
 ##
 # set your data path
-data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
+# old path
+# data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
+data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S1_TOC_100M"
+list.files(data_path)
 #data_path <- getwd()
 #getwd()
 
@@ -110,10 +113,19 @@ g<- raster('/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/download/2014/PROBAV_S5_TOC
 ## Only GeoTIFF is accepted
 ## The files should be stored in the folder structure used by vito
 ## (One foler per date contains files for all tiles).
-l0_dir <-  file.path(data_path)
-df_probav_down <- getProbaVinfo(l0_dir, pattern = ".tif$")
+dir_file <- readRDS("temp/dir_list")
+
+datalist = list()
+for (i in 1:length(dir_file)){
+  dat <- getProbaVinfo(dir_file[i], pattern = ".tif$", tiles = "X18Y02")
+  datalist[[i]] <- dat # add it to your list
+}
+
+df_probav_down <- do.call(rbind, datalist)
+
+# df_probav_down <- getProbaVinfo(fd2, pattern = ".tif$", tiles = "X18Y02")
 df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
-#df_probav_down %>% ggvis(x=~X, y=~Y )
+# df_probav_down %>% ggvis(x=~X, y=~Y )
 
 
 ## ---- clean data ---- #
@@ -121,10 +133,16 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 QC_val <- getProbaVQClist()$clear_all
 
 patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
-#patterns <- list('RADIOMETRY.tif$', 'NDVI.tif$')
 tiles <- c("X18Y02") #..., "X21Y06")
 
-df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
+df = list()
+for (i in 1:length(dir_file)){
+  dat <- getProbaVinfo(dir_file[i], pattern = patterns, tiles = c("X18Y02"))
+  df[[i]] <- dat # add it to your list
+}
+
+df_in <- do.call(rbind, df)
+#df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
 df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 nrow(df_in)
 
