@@ -11,7 +11,7 @@ if (!require(ggvis)) install.packages('ggvis', dependencies = T)
 if (!require(dplyr)) install.packages('dplyr')
 if (!require(gdalUtils)) install.packages('gdalUtils')
 
-
+s
 
 # devtools might require additional packages. If fails, run in bash (Centos):
 #sudo yum -y install libcurl libcurl-devel
