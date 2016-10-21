@@ -76,7 +76,7 @@ source("R/getHarmMetricsSpatial_JE.R")
 ##
 # set your data path
 # old path
-# data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
+data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
 data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S1_TOC_100M"
 list.files(data_path)
 #data_path <- getwd()
@@ -145,7 +145,10 @@ for (i in 1:length(dir_file)){
 }
 
 df_in <- do.call(rbind, df)
-#df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
+
+#-----------------
+l0_dir <- data_path
+df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
 df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 nrow(df_in)
 

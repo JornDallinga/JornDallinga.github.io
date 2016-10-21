@@ -16,7 +16,7 @@ output:
 library(knitr)
 opts_chunk$set(fig.width=5, fig.align='center', fig.height=5, dpi=72)
 # set the knitR working directory to the same file location as getwd(), in order to maintain the link to R source scripts.
-knitr::opts_knit$set(root.dir = "/home/pi/PROBA_V/ProbaV_JD")
+knitr::opts_knit$set(root.dir = getwd())
 ```
 
 ## Introduction
@@ -309,7 +309,7 @@ As can be observed from the dataframe output (df_probav_sm), we get to retrieve 
 ```{r}
 b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-09-26", end_date = "2015-10-26", te = c(5.996773,51.80702,6.468209,52.43639))
   
-df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-02-10", end_date = "2015-10-26")
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-09-26", end_date = "2015-10-26")
 
 # returning first three rows of the created dataframe.
 head(df_probav_sm, n=3)
@@ -392,6 +392,9 @@ Well that looks cloudy! Good, now we can start adding the Proba-V cloud mask and
 # cloud mask SM
 bands_select <- '(BLUE|SWIR|NIR0)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+
+# create virtual raster stack output name
+vrt_name <- file.path(getwd(), paste0("rsdata/probav/sm2/", tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # load the image in our virtual raster stack
 b_vrt_cloud_mask <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-04-16", end_date = "2015-04-16", te = c(5.996773,51.80702,6.468209,52.43639))
