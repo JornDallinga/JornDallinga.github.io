@@ -26,6 +26,11 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
     info <- subset(info, info$date >= start_date & info$date <= end_date)
     
   }
+  
+  info$date
+  f <- gsub("-", "", info$date)
+  gg <- subset(x2, str_sub(x2,-8,-1) %in% f)
+  
   x <- info
   x <- paste0(x2,'/',x$fpath)
   

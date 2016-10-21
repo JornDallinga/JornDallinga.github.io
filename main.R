@@ -72,6 +72,8 @@ source("R/CleanProbaV2.R")
 source("R/getHarmMetricsSpatial_JE.R")
 
 
+# Run script
+system("R < /home/JD/R_Projects/JornDallinga.github.io/R/Run_ProcessBath2.R --no-save")
 
 ##
 # set your data path
@@ -162,13 +164,13 @@ processProbaVbatch2(l0_dir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
-start_date <- "20150814"
-end_date <- "20150814"
+start_date <- "20130814"
+end_date <- "20170814"
 x <- dir_file
 g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
 
 processProbaVbatch2(g,
-                    pattern = patterns, tiles = tiles, start_date = "2015-08-14", end_date = "2015-08-14",
+                    pattern = patterns, tiles = tiles, start_date = "2013-08-14", end_date = "2017-08-14",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
