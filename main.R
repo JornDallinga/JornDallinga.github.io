@@ -76,7 +76,7 @@ source("R/getHarmMetricsSpatial_JE.R")
 ##
 # set your data path
 # old path
-data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
+#data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
 data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S1_TOC_100M"
 list.files(data_path)
 #data_path <- getwd()
@@ -147,7 +147,7 @@ for (i in 1:length(dir_file)){
 df_in <- do.call(rbind, df)
 
 #-----------------
-l0_dir <- data_path
+#l0_dir <- data_path
 df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
 df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 nrow(df_in)
@@ -162,13 +162,13 @@ processProbaVbatch2(l0_dir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
-start_date <- "20150815"
-end_date <- "20150815"
+start_date <- "20150814"
+end_date <- "20150814"
 x <- dir_file
 g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
 
 processProbaVbatch2(g,
-                    pattern = patterns, tiles = tiles, start_date = "2015-08-15", end_date = "2015-08-15",
+                    pattern = patterns, tiles = tiles, start_date = "2015-08-14", end_date = "2015-08-14",
                     QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
