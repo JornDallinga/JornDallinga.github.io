@@ -5,20 +5,28 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
   }
   x2 <- x
   if(length(x) == 1) {
-    
-    info <- getProbaVinfo(x, pattern=pattern)
+  
+    info <- getProbaVinfo(x, pattern=pattern, tiles = tiles)
     
     # x <- list.files(path=x, pattern=pattern, full.names=TRUE,  recursive = T, include.dirs = F, no.. = T)
+  } else {
+    
+    df = list()
+    for (i in 1:length(x)){
+      dat <- getProbaVinfo(x[i], pattern = patterns, tiles = tiles)
+      df[[i]] <- dat # add it to your list
+    }
+    info <- do.call(rbind, df)
   }
   if (!is.null(tiles)) {
-    x <- subset(info, info$tile %in% tiles)
+    info <- subset(info, info$tile %in% tiles)
     # x <- x[info$tile %in% tiles]
   }
   if (!is.null(end_date) & !is.null(start_date)) {
-    x <- subset(x, x$date >= start_date & x$date <= end_date)
+    info <- subset(info, info$date >= start_date & info$date <= end_date)
     
   }
-
+  x <- info
   x <- paste0(x2,'/',x$fpath)
   
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)

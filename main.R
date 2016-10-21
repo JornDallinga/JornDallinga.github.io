@@ -159,24 +159,17 @@ processProbaVbatch2(l0_dir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
-start_date <- "20150806"
+start_date <- "20150815"
 end_date <- "20150815"
 x <- dir_file
-
-d <- str_sub(x,-8,-1)
-
 g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
 
-for (i in 1:length(g)){
-  if (length(list.files(g[i])) != 0){
-    
-    processProbaVbatch2(g[10], 
-                        pattern = patterns, tiles = tiles, start_date = "2015-08-15", end_date = "2015-08-15",
-                        QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                        ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
-                        overwrite=F)
-  }
-}
+processProbaVbatch2(g,
+                    pattern = patterns, tiles = tiles, start_date = "2015-08-15", end_date = "2015-08-15",
+                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    overwrite=F)
+
 
 # check result for red
 df_sm <- getProbaVinfo(file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")), pattern = "sm.tif$")
