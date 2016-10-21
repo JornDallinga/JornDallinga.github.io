@@ -1036,25 +1036,25 @@ system(wget_string)</code></pre>
 # plot the retrieved data
 df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()</code></pre>
 <!--html_preserve-->
-<div id="plot_id304953767-container" class="ggvis-output-container">
-<div id="plot_id304953767" class="ggvis-output">
+<div id="plot_id414982033-container" class="ggvis-output-container">
+<div id="plot_id414982033" class="ggvis-output">
 
 </div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control"> <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
-Renderer: <a id="plot_id304953767_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id304953767" data-renderer="svg">SVG</a> | <a id="plot_id304953767_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id304953767" data-renderer="canvas">Canvas</a>
+Renderer: <a id="plot_id414982033_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id414982033" data-renderer="svg">SVG</a> | <a id="plot_id414982033_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id414982033" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id304953767_download" class="ggvis-download" data-plot-id="plot_id304953767">Download</a>
+<a id="plot_id414982033_download" class="ggvis-download" data-plot-id="plot_id414982033">Download</a>
 </li>
 </ul>
 <p></nav></p>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id304953767_spec = {
+var plot_id414982033_spec = {
   "data": [
     {
       "name": ".0/group_by1/count2/stack3_flat",
@@ -1225,7 +1225,7 @@ var plot_id304953767_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id304953767").parseSpec(plot_id304953767_spec);
+ggvis.getPlot("plot_id414982033").parseSpec(plot_id414982033_spec);
 </script>
 <!--/html_preserve-->
 </div>
@@ -1539,7 +1539,7 @@ plot(b_vrt_s)</code></pre>
 </div>
 </div>
 <h2 id="cloudfilter-example">cloudfilter example</h2>
-<p>&quot;Clouds in satellite observations obstruct the retrieval of vegetation parameters. Therefore a proper cloud screening is pivotal in the pre-processing of the various value-added products. The PROBA-V cloud detection algorithm is a modified version of the method applied to the SPOTVGT BLUE and SWIR observations (Lissens et al., 2000). Using these band reflectances, two separate cloud masks are created. The first (second) mask uses a BLUE (SWIR) band threshold with an additional check at 300 m resolution on the SWIR (BLUE) band. The final cloud mask is a merge of these two masking results. Compared to the SPOT-VGT cloud mask, some modifications were necessary, because the assumption that clouds are observed at the same position in both the BLUE and SWIR bands is no longer valid for PROBA-V, due to the observation time difference.&quot; <a href="http://proba-v.vgt.vito.be/sites/default/files/Product_User_Manual.pdf">source</a>p.17.</p>
+<p>&quot;Clouds in satellite observations obstruct the retrieval of vegetation parameters. Therefore a proper cloud screening is pivotal in the pre-processing of the various value-added products. The PROBA-V cloud detection algorithm is a modified version of the method applied to the SPOTVGT BLUE and SWIR observations (Lissens et al., 2000). Using these band reflectances, two separate cloud masks are created. The first (second) mask uses a BLUE (SWIR) band threshold with an additional check at 300 m resolution on the SWIR (BLUE) band. The final cloud mask is a merge of these two masking results. Compared to the SPOT-VGT cloud mask, some modifications were necessary, because the assumption that clouds are observed at the same position in both the BLUE and SWIR bands is no longer valid for PROBA-V, due to the observation time difference.&quot; <a href="http://proba-v.vgt.vito.be/sites/default/files/Product_User_Manual.pdf">source</a> p.17.</p>
 <p>In addition to the added cloud/shadow algorythm applied on the Proba-V products, the Proba-V R package adds an additional cloud filter which requires some mannual interpretation. The following section will visualize the difference between the cloud/shadow algorytm from Proba-V and the created cloud filter function in the Proba-V R package.</p>
 <p>We will start of with a false color image of our subset area previous defined by the extent function. We will simply use all bands available. In order to create a false color image, we will have to rerun our processbatchfunction without filtering the cloud/shadow pixels.</p>
 <div class="row">

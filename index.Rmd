@@ -341,7 +341,7 @@ separate cloud masks are created. The first (second) mask uses a BLUE (SWIR) ban
 an additional check at 300 m resolution on the SWIR (BLUE) band. The final cloud mask is a merge
 of these two masking results. Compared to the SPOT-VGT cloud mask, some modifications were
 necessary, because the assumption that clouds are observed at the same position in both the BLUE
-and SWIR bands is no longer valid for PROBA-V, due to the observation time difference."  [source](http://proba-v.vgt.vito.be/sites/default/files/Product_User_Manual.pdf)p.17. 
+and SWIR bands is no longer valid for PROBA-V, due to the observation time difference."  [source](http://proba-v.vgt.vito.be/sites/default/files/Product_User_Manual.pdf) p.17. 
 
 In addition to the added cloud/shadow algorythm applied on the Proba-V products, the Proba-V R package adds an additional cloud filter which requires some mannual interpretation. The following section will visualize the difference between the cloud/shadow algorytm from Proba-V and the created cloud filter function in the Proba-V R package.
 
