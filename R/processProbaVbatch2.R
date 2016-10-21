@@ -32,7 +32,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
   gg <- subset(x2, str_sub(x2,-8,-1) %in% f)
   
   x <- info
-  x <- paste0(x2,'/',x$fpath)
+  x <- paste0(gg,'/',x$fpath)
   
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   
