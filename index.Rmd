@@ -454,10 +454,12 @@ vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse
 # Select all dates of the blue band
 b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01")
 
-df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = F, start_date = "2015-10-21", end_date = "2016-03-01")
+b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01")
+
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = F, start_date = "2015-10-21", end_date = "2016-03-01")
 
 dir.create('/userdata/cloud_filter')
-out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")
+out_name <- paste('/userdata/cloud_filter/cloud_filter.tif', sep = "")
 ```
 ```{r, eval=F}
 # set variables
