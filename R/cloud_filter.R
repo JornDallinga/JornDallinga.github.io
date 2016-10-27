@@ -1,4 +1,4 @@
-cloud_filter <- function(x, dates = dates, thresholds = NA, span = 0.3, cf_bands = cf_bands){
+cloud_filter <- function(x, dates = dates, thresholds = NA, span = 0.3, cf_bands = cf_bands, bands = bands){
   # smooth loess and getHarmMetrics
   m <- matrix(x, nrow= length(bands), ncol=length(dates))
   thresholds <- matrix(thresholds, nrow=2)

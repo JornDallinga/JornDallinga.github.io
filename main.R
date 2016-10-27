@@ -10,7 +10,6 @@ version$os ## or R.version$os
 if (!require(ggvis)) install.packages('ggvis', dependencies = T)
 if (!require(dplyr)) install.packages('dplyr')
 if (!require(gdalUtils)) install.packages('gdalUtils')
-s
 # devtools might require additional packages. If fails, run in bash (Centos):
 # for devtools, CentOS requires the following:
 
@@ -79,7 +78,7 @@ system("R < /home/JD/R_Projects/JornDallinga.github.io/R/Run_ProcessBath2.R --no
 # set your data path
 # old path
 #data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
-data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S1_TOC_100M"
+data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M"
 list.files(data_path)
 #data_path <- getwd()
 #getwd()
@@ -154,24 +153,27 @@ df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
 df_in %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 nrow(df_in)
 
+# set directory to process and store files
+outdir <- file.path("/userdata/sm2")
+
 # check cores
 detectCores(all.tests = FALSE, logical = TRUE)
 # parallel with foreach
 # similar for NDVI
-processProbaVbatch2(l0_dir, 
+processProbaVbatch2(g, 
                     pattern = patterns, tiles = tiles, start_date = "2014-03-06", end_date = "2015-12-06",
-                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                    QC_val = QC_val, outdir = outdir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
-start_date <- "20130814"
-end_date <- "20170814"
+start_date <- "20151021"
+end_date <- "20151021"
 x <- dir_file
 g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
 
 processProbaVbatch2(g,
-                    pattern = patterns, tiles = tiles, start_date = "2013-08-14", end_date = "2017-08-14",
-                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                    pattern = patterns, tiles = tiles, start_date = "2015-10-21", end_date = "2015-10-21",
+                    QC_val = QC_val, outdir = outdir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
@@ -205,7 +207,7 @@ out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_
 #              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
 
 rasterOptions(todisk = F, progress = "text",
-              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")), maxmemory = 2e+08, chunksize = 2e+08)
+              tmpdir = file.path("/rsdata/probav/temp", collapse =""), maxmemory = 2e+08, chunksize = 2e+08)
 
 
 
@@ -223,7 +225,7 @@ bands_select <- '(NDVI)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-03-06", end_date = "2015-12-06")
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-03-06", end_date = "2016-12-06", te = c(5.996773,51.80702,6.468209,52.43639))
 df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2014-03-06", end_date = "2015-12-06")
 
 

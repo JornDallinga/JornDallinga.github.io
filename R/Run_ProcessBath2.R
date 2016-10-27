@@ -28,22 +28,28 @@ source("R/getHarmMetricsSpatial_JE.R")
 # set your data path
 # old path
 #data_path <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
-data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S1_TOC_100M"
+data_path <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M"
 
 dir_file <- readRDS("temp/dir_list")
 
-start_date <- "20130814"
-end_date <- "20170814"
+start_date <- "20150416"
+end_date <- "20160416"
 x <- dir_file
 g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
 
 QC_val <- getProbaVQClist()$clear_all
 
 patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
-tiles <- c("X18Y02") #..., "X21Y06")
+tiles <- c("X17Y06") #..., "X21Y06")
+#outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse =""))
+outdir <- file.path("/userdata/sm2")
+
+rasterOptions(todisk = F,
+              tmpdir = file.path("/userdata/temp", collapse =""), maxmemory = 2e+08, chunksize = 2e+08)
+
 
 processProbaVbatch2(g,
-                    pattern = patterns, tiles = tiles, start_date = "2013-08-14", end_date = "2017-08-14",
-                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
-                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    pattern = patterns, tiles = tiles, start_date = "2015-04-16", end_date = "2016-04-16",
+                    QC_val = QC_val, outdir = outdir,
+                    ncores = 5,
                     overwrite=F)

@@ -134,12 +134,17 @@ system(wget_string)
 
 ## Preprocessing
 
-Lets start with the preprocessing of the data. Remember, the following parts of the script only work by following the ProbaV directory structure on the cloud toolbox. Provided by Vito or you can download manually, but the files should be stored in the folder structure used by vito (One folder per date contains files for all tiles).
+Lets start with the preprocessing of the data. Remember, the following parts of the script only work by following the ProbaV directory structure on the cloud toolbox. Provided by Vito or you can download manually, but the files should be stored in the folder structure used by vito (One folder per date, in YYYYMMDD format, contains files for all tiles).
+
+The PROBA-V has 3 synthesis products, S1 (daily observations), S5 (mosaiced 5 day observation) and S10 (mosaiced 10 day observation). In the case of a 10-day synthesis product, the product has a minimum effect of cloud cover, resulting from selection of cloud-free acquisitions during the 10-day period. Additionally, their are two products amongst these daily products available, the Top of Atmosphere (TOA) and Top of Canopy (TOC). The TOC is atmospheric corrected product, and in combination with the S5 synthesis, is the data we are going to use in this tutorial.
+
+Below the data location of my PROABA_V data, and where I intend to store my new datasets (outdir)
 
 ```{r, echo=F}
-
-# set your data path
-l0_dir <- "/DATA/GEOTIFF/PROBAV_L3_S5_TOC_100M"
+# set your data path in which you have the .tiff files of ProbaV data
+l0_dir <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M"
+# set data path to which you would write large files
+outdir <- "/userdata/sm2"
 ```
 
 start by setting our data path which contains the downloaded files. The following section loops through the downloaded data folder and retrieves the product information, such as tiles and acquisition dates. Since the we only work with .tif files (for now), we add '.tif$' to the pattern selection.
@@ -149,10 +154,22 @@ start by setting our data path which contains the downloaded files. The followin
 10_dir <- "set data path" 
 # if you manually downloaded the data
 10_dir <- dirloc
+# set data path to which you would write large files
+outdir <- outdir
 ```
-```{r}
-df_probav_down <- getProbaVinfo(l0_dir, pattern = ".tif$")
 
+The files should be stored in the folder structure used by vito, using YYYYMMDD notation for the folders that contain the .tif files. Where one folder per date (YYYYMMDD) contains files for all tiles. Through which folders you wish to loop the product information function, is up to you. For this tutorial, we created a preset of folder names for which we would like to receive the product information on the containing .tif files. If you wish to simply use one folder name, note that all the subfolders will be selected in the looping process, including folders that might contain incorrect/unprocessed .tif files.
+
+```{r}
+dir_file <- readRDS("temp/dir_list")
+# create a loop to apply the getProbaVinfo function on a group of folders
+datalist = list()
+for (i in 1:length(dir_file)){
+  dat <- getProbaVinfo(dir_file[i], pattern = ".tif$", tiles = "X18Y02")
+  datalist[[i]] <- dat # add it to your list
+}
+# merge the created dataframes into a single dataframe of product information on your selected tiles.
+df_probav_down <- do.call(rbind, datalist)
 # plot the retrieved data
 df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ```
@@ -176,24 +193,29 @@ The Radiometry brick contains 4 raster layers. Lets split the radiometry brick i
 ```{r}
 # First, select the radiometry .tif files from the download folder and which tiles to use
 patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$"
-tiles <- c("X18Y02") # c("X21Y06","X21Y07",...)
+tiles <- c("X17Y06") # c("X16Y06","X11Y07", "X11Y08", "X11Y09", ...)
 
 # Lets gather the information from the radiometry band using the variables assigned above. 
-glimpse(getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles))
+df = list()
+for (i in 1:length(dir_file)){
+  dat <- getProbaVinfo(dir_file[i], pattern = patterns, tiles = c("X17Y06"))
+  df[[i]] <- dat # add it to your list
+}
+# lets get a glimpse of the currently available data in our selection of patterns and tiles.
+glimpse(df)
 
 #How many radiometry bands do we have of the assigned tiles?
-df_in <- getProbaVinfo(l0_dir, pattern = patterns, tiles = tiles)
-print(paste(nrow(df_in), " radiometry bands", sep = ""))
+print(paste(nrow(df), " radiometry bands", sep = ""))
 ```
 
 Next step is to keep the quality control values in the data which correspond to the QC_val as result of the 'getProbaVQClist' function. Lets test this on a single date/location. Select a RADIOMETRY.tif or NDVI.tif file from the downloaded data folder and assign it to a variable. 
 
 ```{r}
 # Assign variable from the download location of your Geotiffs. Lets use the NDVI.
-r <- paste(l0_dir, "/20151021/PROBAV_S5_TOC_20151021_100M_V001/PROBAV_S5_TOC_X18Y02_20151021_100M_V001_NDVI.tif", sep = "")
+r <- paste(l0_dir, "/20160116/PROBAV_S5_TOC_20160116_100M_V001/PROBAV_S5_TOC_X17Y06_20160116_100M_V001_NDVI.tif", sep = "")
 
 # Assign a file.path (including filename) to which we will write the cleaned data.
-filename <- paste(getwd(),"/rsdata/probav/sm2/PROBAV_S5_TOC_X18Y02_20151021_100M_V001.tif", sep = "")
+filename <- paste(outdir,"/PROBAV_S5_TOC_X17Y06_20160116_100M_V001_NDVI_sm.tif", sep = "")
 ```
 ```{r, eval=F}
 cleanProbaV2(f_data = r, filename=filename, QC_val = QC_val, fill=255, datatype="FLT4S", as.is = F, overwrite = T)
@@ -216,7 +238,6 @@ The processProbaVbatch function uses the cleanProbaV function on a whole 'batch'
 # Create the required directories
 dir.create("rsdata", showWarnings = FALSE)
 dir.create("rsdata/probav", showWarnings = FALSE)
-dir.create("rsdata/probav/sm2", showWarnings = FALSE)
 
 # How many cores do we have:
 detectCores(all.tests = FALSE, logical = TRUE)
@@ -227,7 +248,7 @@ patterns <- c('RADIOMETRY.tif$') # or "NDVI.tif$"
 # similar for NDVI
 processProbaVbatch2(l0_dir, 
                     pattern = patterns, tiles = tiles, start_d = "2015-10-25", end_date = NULL,
-                    QC_val = QC_val, outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse ="")),
+                    QC_val = QC_val, outdir = outdir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
@@ -242,14 +263,15 @@ The following section sets the required parameters for the next function, the 'v
 # ----- check input --- #
 tn <- 1 # tile number (tn) 
 # Select tiles of your study area. Multiple tiles can be coerced together. 
-tiles <- c("X18Y02") # c("X18Y02", "X18Y03")
-# set directory of the processed files as a result of the processProbaVbatch function
-probav_sm_dir <- file.path(paste0(getwd(),"/rsdata/probav/sm2/", collapse =""))
+tiles <- c("X17Y06") # c("X18Y02", "X18Y03")
+
 ```
 
 Lets use the getProbaVinfo function again to visualize a certain tile data that we have.
 
 ```{r}
+# set directory of the processed files as a result of the processProbaVbatch function
+probav_sm_dir <- paste(outdir,"/", sep = "")
 # lets retrieve information on the available data that we have selected by setting our parameters.
 df_probav_sm <- getProbaVinfo(probav_sm_dir, pattern =  '_sm.tif$', tiles = tiles)
 # visualize product information, such as bands and acquisition dates. 
@@ -274,9 +296,10 @@ dir.create("rsdata/probav/logs", showWarnings = FALSE)
 logfile <- file.path(getwd(), paste0("rsdata/probav/logs/", tiles, ".log"))
 # create directory for output results and temp raster results
 dir.create("rsdata/probav/metrics", showWarnings = FALSE)
-dir.create("rsdata/probav/temp", showWarnings = FALSE)
+dir.create("/userdata/temp", showWarnings = FALSE)
+
 rasterOptions(todisk = F,
-              tmpdir = file.path(paste0(getwd(),"/rsdata/probav/temp", collapse ="")))
+              tmpdir = file.path("/userdata/temp", collapse =""))
 ```
 
 Select bands:
@@ -284,8 +307,8 @@ Band selection for the the stacking of raster layers. For this tutorial, we use 
 
 ```{r}
 # Select the bands to use in sequential functions
-bands_select <- '(NDVI|SWIR|BLUE)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
-bands_select <- 'NDVI' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+bands_select <- '(NDVI|SWIR|BLUE|RED0)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
+#bands_select <- 'NDVI' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
 # Include the .tif extension 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 ```
@@ -299,7 +322,7 @@ Create a virtual stack from selected bands. The virtual raster stacking is an al
 gdalinfo(version = T)
 
 # create virtual raster stack output name
-vrt_name <- file.path(getwd(), paste0("rsdata/probav/sm2/", tiles, "_",paste0(bands, collapse = "_"), ".vrt"))
+vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), ".vrt"))
 ```
 
 The virtual raster function within the Proba-V package can create two outputs, a virtual raster stack, or a dataframe including the metadata of the included rasters. This preference can be set by the 'return_raster' variable. Other parameters within the function are the output name (vrt name). the tiles to stack and the available start and end date of the tile selection. We are selecting the whole availabe range of dates.
@@ -307,29 +330,18 @@ The virtual raster function within the Proba-V package can create two outputs, a
 As can be observed from the dataframe output (df_probav_sm), we get to retrieve the metadata of our selection. 
 
 ```{r}
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-09-26", end_date = "2015-10-26", te = c(5.996773,51.80702,6.468209,52.43639))
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21")
   
-df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-09-26", end_date = "2015-10-26")
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2015-10-21")
 
 # returning first three rows of the created dataframe.
-head(df_probav_sm, n=3)
+head(df_probav_sm, n=4)
 ```
 
-set temp extent:
-Since we are working with large tiles and the available cores and cpu depend on the machine you are working on, we reduce our working extent to a subset. Below a coordinate selection of a subset area within the Netherlands and Germany. These coordinates are linked to the tile selection. If you intend to follow this tutorial with different tiles, please use coordinates available within your selected tile extent. 
+Lets plot the first 4 individual bands from the first date from our virtual raster stack.
 
 ```{r}
-xmin <- 5.996773 
-xmax <- 6.468209
-ymin <- 51.80702
-ymax <- 52.43639
-e <- extent(c(xmin,xmax,ymin,ymax))
-```
-
-Lets plot the individual bands from the first date from our virtual raster stack.
-
-```{r}
-b_vrt_s <- subset(b_vrt,1:length(bands))
+b_vrt_s <- subset(b_vrt,1:4)
 plot(b_vrt_s)
 ```
 
@@ -362,14 +374,15 @@ dir.create(file.path(cloud_dir), showWarnings = FALSE)
 
 # select dir with clouds
 probav_cloud_dir <- paste(getwd(),'/',cloud_dir, sep = "")
+l0_dir1 <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M/20151021"
 ```
 ```{r, eval=F}
 # we wont use NDVI for the cloud filter in this example, just the radiometry is needed
 patterns <- c('RADIOMETRY.tif$')
-processProbaVbatch2(l0_dir, 
-                    pattern = patterns, tiles = tiles, start_date = "2015-04-16", end_date = "2015-04-16",
-                    QC_val = 1:255, outdir = file.path(paste0(getwd(),cloud_dir, collapse ="")),
-                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+processProbaVbatch2(l0_dir1, 
+                    pattern = patterns, tiles = tiles, start_date = "2015-10-21", end_date = "2015-10-21",
+                    QC_val = 1:255, outdir = probav_cloud_dir,
+                    ncores = 5,
                     overwrite=F)
 
 ```
@@ -377,10 +390,17 @@ processProbaVbatch2(l0_dir,
 Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. 
 
 ```{r}
+xmin <- -2.064549  
+xmax <- -1.074974 
+ymin <- 8.840184
+ymax <- 10.39336
+e <- extent(c(xmin,xmax,ymin,ymax))
+
 # select dir with clouds
 probav_cloud_dir <- paste(getwd(),'/',cloud_dir,'/', sep = "")
+vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), ".vrt"))
 # load the image in our virtual raster stack
-b_vrt_cloud <- timeVrtProbaV2(probav_cloud_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-04-16", end_date = "2015-04-16", te = c(5.996773,51.80702,6.468209,52.43639))
+b_vrt_cloud <- timeVrtProbaV2(probav_cloud_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin,ymin,xmax,ymax))
 
 # plot a false color image
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
@@ -394,10 +414,10 @@ bands_select <- '(BLUE|SWIR|NIR0)'
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
 # create virtual raster stack output name
-vrt_name <- file.path(getwd(), paste0("rsdata/probav/sm2/", tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
+vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # load the image in our virtual raster stack
-b_vrt_cloud_mask <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-04-16", end_date = "2015-04-16", te = c(5.996773,51.80702,6.468209,52.43639))
+b_vrt_cloud_mask <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin, ymin, xmax, ymax))
 
 # assign virtual raster stack to new variable
 r <- b_vrt_cloud_mask
@@ -430,15 +450,19 @@ Lets apply the additional cloud filter! In this example we use the blue band to 
 ```{r}
 bands_select <- '(BLUE)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 # Select all dates of the blue band
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-03-06", end_date = "2015-12-06")
-df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[tn], return_raster = F, start_date = "2014-03-06", end_date = "2015-12-06")
-out_name <- paste(getwd(),'/rsdata/probav/metrics/cloud_filter.envi', sep = "")
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01")
+
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = F, start_date = "2015-10-21", end_date = "2016-03-01")
+
+dir.create('/userdata/cloud_filter')
+out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")
 ```
 ```{r, eval=F}
 # set variables
 # threshold for blue
-blue_c_filter <- mcCalc(x=b_vrt, fun=cloud_filter, minrows = 15, mc.cores = mc.cores, logfile=logfile, out_name = out_name, overwrite = T, mc.preschedule = FALSE)
+blue_c_filter <- mcCalc(x=b_vrt, fun=cloud_filter, minrows = 15, mc.cores = 20, logfile=logfile, out_name = out_name, overwrite = F, mc.preschedule = FALSE, thresholds = c(-80, Inf), cf_bands = 1, bands = 1)
 ```
 
 Lets select the same data as our false colour image from the raster brick we just created. 
@@ -554,6 +578,7 @@ plot(b_metrics)
 ## Classification process
 
 Lets classify! Prepare classification data
+
 ```{r}
 pnt_JD <- readOGR(file.path(getwd(), "rsdata/ref_data"), "Ref_dataJD", stringsAsFactors = F)
 names(pnt_JD) <- c("id", "Description", "ID_nr", "x", "y", "z", "m")
