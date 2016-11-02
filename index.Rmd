@@ -404,6 +404,11 @@ b_vrt_cloud <- timeVrtProbaV2(probav_cloud_dir, pattern = bands_sel, vrt_name = 
 
 # plot a false color image
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
+e <- drawExtent()
+xmin <- -1.328188
+xmax <- -1.321947
+ymin <- 9.873452
+ymax <- 9.876528
 ```
 
 Well that looks cloudy! Good, now we can start adding the Proba-V cloud mask and the Proba-V R package cloud filter. Lets start with visualizing the cloud detection method inbedded in the Proba-V data.
@@ -452,31 +457,52 @@ bands_select <- '(BLUE)'
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 # Select all dates of the blue band
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01")
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01", te = c(xmin, ymin, xmax, ymax))
 
-b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01")
-
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = F, start_date = "2015-10-21", end_date = "2016-03-01")
+#b_vrt <- timeStackProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, #return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01")
 
 dir.create('/userdata/cloud_filter')
-out_name <- paste('/userdata/cloud_filter/cloud_filter.tif', sep = "")
+out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")
+
 ```
 ```{r, eval=F}
 # set variables
 # threshold for blue
-blue_c_filter <- mcCalc(x=b_vrt, fun=cloud_filter, minrows = 15, mc.cores = 20, logfile=logfile, out_name = out_name, overwrite = F, mc.preschedule = FALSE, thresholds = c(-80, Inf), cf_bands = 1, bands = 1)
+  
+# df_probav_sm <- getProbaVinfo(probav_sm_dir, pattern = 'BLUE_sm.tif$', tiles = tiles)
+# s_info <- df_probav_sm
+# #s_info <- getProbaVinfo(names(x))
+# bands_select <- '(BLUE)' 
+# bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+# 
+# bands <- s_info[s_info$date == s_info$date[1], 'band']
+# dates <- s_info[s_info$band == bands[1], 'date']
+# ydays <- s_info[s_info$band == bands[1], 'yday']
+# cf_bands = 1
+# span = 0.3
+# tiles = tiles
+# thresholds = c(-80, Inf)
+# thresholds <- matrix(thresholds, nrow=2)
+bands_select <- '(BLUE)' 
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+
+cloud_filter(x = b_vrt, probav_sm_dir = probav_sm_dir, pattern = bands_sel,
+                          tiles = tiles, minrows = minrows, mc.cores = mc.cores,
+                          logfile=logfile, overwrite=T, span=0.3, 
+                          cf_bands = c(1), thresholds=c(-80, Inf), 
+                          filename = out_name)
+
+blue_c_filter <- brick(out_name)
 ```
 
 Lets select the same data as our false colour image from the raster brick we just created. 
 
 ```{r, eval=F}
 # select date
-blue_c_filter <- subset(blue_c_filter ,10)
-# crop the subset to the same extent as our false colour image
-blue_c_filter <- crop(x = blue_c_filter, y = e)
+blue_c_filter <- subset(blue_c_filter ,1)
 ```
 
-The cloud_filter function returns the Quality Control values. Meaning: "QC" is the status of observations: 0=Missing/band input QC, 1=good, 2=temporal outlier. Here we assign new values to our raster to viisualise what the SmoothLoes function detects by the extra clouds
+The cloud_filter function returns the Quality Control values. Meaning: "QC" is the status of observations: 0=Missing/band input QC, 1=good, 2=temporal outlier. Here we assign new values to our raster to visualise what the SmoothLoes function detects by the extra clouds
 
 ```{r, eval=F}
 # copy the data set
@@ -495,8 +521,8 @@ Allright! Now lets plot our cloud filter!
 plot(blue_c_filter, col = 'darkred', legend = F)
 ```
 
-
 Lets plots the original false colour again against the 2 cloud filters
+
 ```{r}
 # data copy
 r3 <- r2
@@ -513,29 +539,36 @@ plot(r3,breaks=breakpoints,col=colors, add = T, legend = F)
 par(mfrow=c(1,1))
 ```
 
-
-## check layers, bands, blocks and cores
-
-```{r,eval=F}
-# --- get metrics ---  #
-cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
-            nrow(df_probav_sm), paste0(bands, collapse = " "),
-            blockSize(b_vrt, minrows = minrows)$n, mc.cores))
-```
+The cloud detection algorythm inbedded in the ProbaV data detects most of the clouds. Our additional cloud filter marks some additional clouds/shadow missed by the cloud detection algorythm. As can be observed, these missed cloud pixels are mainly distributed near the edges of clouds.
 
 
-## create time series using zoo
+## Time series
+
+Lets start of with creating a small time-series subset of a single pixel, randomly chosen from a raster stack. Since we are interested in the seasonal trends of vegetation, lets select the NDVI band for the following example. First step is to create a virtual raster stack from a selected time range on our region of interest (extent).
 
 ```{r,eval=T}
+bands_select <- '(NDVI)' 
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
+# Select all dates of the blue band
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
+
 # Select random pixel of our raster stack
-z <- zoo(c(b_vrt[50000]), getZ(b_vrt))
+z <- zoo(c(b_vrt[500]), getZ(b_vrt))
+
+#unique(df_probav_sm$band)
+# read and assign the acquisition dates to a variable
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+
+bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
+dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
 
 # use smoothloes to create time series
-f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates,thresholds=c(-80, Inf, -120, 120) , res_type=c("all"), span=0.3)
+f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
 plot(f)
 ```
 
-## get metrics from time series
+## get harmonic metrics
 
 We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a liner harmonic model to the time series.
 The coefficients of this model are then used as metrics for overall level and seasonality.
@@ -554,14 +587,35 @@ The following function runs the getHarmMetrics to our virtual raster brick and r
 
 # create output name on the metrics
 out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
-# set raster options to your requirements
+
+bands_select <- '(BLUE|SWIR|NDVI)' 
+bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
+# Select all dates of the blue band
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01", te = c(xmin, ymin, xmax, ymax))
+
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2016-03-01")
+```
+
+Check layers, bands, blocks and cores! 
+
+```{r,eval=F}
+# --- get metrics ---  #
+cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
+            nrow(df_probav_sm), paste0(bands, collapse = " "),
+            blockSize(b_vrt, minrows = minrows)$n, mc.cores))
+```
+
+
+```{r}
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores,
                                       logfile=logfile,
                                       overwrite=T, span=0.3,
                                       cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, probav_sm_dir = probav_sm_dir, 
+                                      filename = out_name, df_probav_sm = df_probav_sm, 
                                       order = 1, datatype="INT2S")
 ```
+
 
 
 ## plot the metrics

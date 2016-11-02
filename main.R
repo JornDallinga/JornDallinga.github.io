@@ -45,7 +45,7 @@ if (!require(knitrBootstrap)) install.packages('knitrBootstrap')
 if (!require(zoo)) install.packages('zoo')
 if (!require(stringr)) install.packages('stringr')
 
-
+library()
 library(stringr)
 library(rgdal)
 library(ranger)
@@ -53,13 +53,15 @@ library(raster)
 library(ggvis)
 library(dplyr)
 library(devtools)
-library(gdalUtils)
 library(probaV)
 library(tools)
 library(knitr)
 library(doParallel)
 library(foreach)
 library(zoo)
+library(gdalUtils)
+
+remove.packages(gdalUtils,"~/R/x86_64-redhat-linux-gnu-library/3.2" )
 
 # below the fixed link file in order to load the ProbaV package from Johannes
 source("R/timeVrtProbaV2.R")
@@ -69,6 +71,7 @@ source("R/getHarmMetricsSpatial2.R")
 source("R/mapDistance2Loess2.R")
 source("R/CleanProbaV2.R")
 source("R/getHarmMetricsSpatial_JE.R")
+source("R/SmoothLoess2.R")
 
 
 # Run script
