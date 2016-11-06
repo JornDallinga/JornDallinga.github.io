@@ -10,6 +10,9 @@ version$os ## or R.version$os
 if (!require(ggvis)) install.packages('ggvis', dependencies = T)
 if (!require(dplyr)) install.packages('dplyr')
 if (!require(gdalUtils)) install.packages('gdalUtils')
+if (!require(gdalUtils)) install.packages('RCurl')
+
+
 # devtools might require additional packages. If fails, run in bash (Centos):
 # for devtools, CentOS requires the following:
 
@@ -44,6 +47,8 @@ if (!require(probaV)) install.packages('probaV')
 if (!require(knitrBootstrap)) install.packages('knitrBootstrap')
 if (!require(zoo)) install.packages('zoo')
 if (!require(stringr)) install.packages('stringr')
+if (!require(stringr)) install.packages('repmis')
+
 
 library()
 library(stringr)
@@ -119,9 +124,24 @@ g<- raster('/home/pi/PROBA_V/ProbaV_JD/rsdata/probav/download/2014/PROBAV_S5_TOC
 ## ---- check  downloaded data
 ## Only GeoTIFF is accepted
 ## The files should be stored in the folder structure used by vito
+library(repmis)
+g <- source_data("https://github.com/JornDallinga/JornDallinga.github.io/blob/master/temp/dir_list.Rdata?raw=True")
+
+githubURL <- "https://github.com/JornDallinga/JornDallinga.github.io/blob/master/temp/dir_list"
+x <- getURL(githubURL)
+out <- readRDS(textConnection(x))
+
+download.file(githubURL,"temp/dir_list", method="curl")
+dir_file <- readRDS("temp/dir_list")
+
+githubURL <- "https://github.com/JornDallinga/JornDallinga.github.io/blob/master/temp/dir_list.RData"
+load(url(githubURL))
+head(df)
+
 ## (One foler per date contains files for all tiles).
 dir_file <- readRDS("temp/dir_list")
 
+tiles <- c("X20Y01")
 datalist = list()
 for (i in 1:length(dir_file)){
   dat <- getProbaVinfo(dir_file[i], pattern = ".tif$", tiles = "X18Y02")
@@ -139,12 +159,12 @@ df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 # apply SM mask and split radiometry tif into single layers
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
-tiles <- c("X18Y02") #..., "X21Y06")
+patterns <- c('NDVI.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
+tiles <- c("X20Y01") #..., "X21Y06")X18Y02
 
 df = list()
 for (i in 1:length(dir_file)){
-  dat <- getProbaVinfo(dir_file[i], pattern = patterns, tiles = c("X18Y02"))
+  dat <- getProbaVinfo(dir_file[i], pattern = patterns, tiles = tiles)
   df[[i]] <- dat # add it to your list
 }
 
@@ -164,20 +184,21 @@ detectCores(all.tests = FALSE, logical = TRUE)
 # parallel with foreach
 # similar for NDVI
 processProbaVbatch2(g, 
-                    pattern = patterns, tiles = tiles, start_date = "2014-03-06", end_date = "2015-12-06",
+                    pattern = patterns, tiles = tiles, start_date = "2016-06-11", end_date = "2016-06-11",
                     QC_val = QC_val, outdir = outdir,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)
 
-start_date <- "20151021"
-end_date <- "20151021"
+start_date <- "20160611"
+end_date <- "20160611"
 x <- dir_file
 g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
+outdir <- file.path("/userdata/sm2")
 
 processProbaVbatch2(g,
-                    pattern = patterns, tiles = tiles, start_date = "2015-10-21", end_date = "2015-10-21",
+                    pattern = patterns, tiles = tiles, start_date = "2016-06-11", end_date = "2016-06-11",
                     QC_val = QC_val, outdir = outdir,
-                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    ncores = 5,
                     overwrite=F)
 
 
