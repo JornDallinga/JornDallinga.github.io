@@ -39,7 +39,7 @@ g <- subset(x, str_sub(x,-8,-1) >= start_date & str_sub(x,-8,-1) <= end_date)
 
 QC_val <- getProbaVQClist()$clear_all
 
-patterns <- c('NDVI.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
+patterns <- c('RADIOMETRY.tif$') # "NDVI.tif$" 'RADIOMETRY.tif$', 
 tiles <- c("X17Y06") #..., "X21Y06")
 #outdir = file.path(paste0(getwd(),"/rsdata/probav/sm2", collapse =""))
 outdir <- file.path("/userdata/sm2")
