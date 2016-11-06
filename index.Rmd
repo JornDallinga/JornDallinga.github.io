@@ -170,6 +170,18 @@ lf <- list.files(l0_dir)
 lf <- lf[nchar(lf) == 8]
 # Create coerced subfolder variable which contain all the PROBAV .tif files that you wish to process.
 dir_file <- paste0(l0_dir,'/',lf)
+```
+
+The dir_file variable now contains all the folders in which we would look for the ProbaV .tif files. The structure of this variable is shown below:
+
+```{r}
+class(dir_file)
+head(dir_file)
+```
+
+Now lets loop through this directory (dir_file) and collect all the metadata for a specific tile. The selection of dates will be done later.
+
+```{r}
 
 # create a loop to apply the getProbaVinfo function on a group of folders
 datalist = list()
@@ -180,6 +192,11 @@ for (i in 1:length(dir_file)){
 }
 # merge the created dataframes into a single dataframe of product information on your selected tiles.
 df_probav_down <- do.call(rbind, datalist)
+```
+
+Below a simple figure on the number of .tif's per band that we retrieved for a our selected tile in the dir_file directory. 
+
+```{r}
 # plot the retrieved data
 df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()
 ```
