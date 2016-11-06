@@ -58,6 +58,7 @@ library(probaV)
 library(tools)
 library(parallel)
 library(zoo)
+library(RCurl)
 ```
 
 
@@ -138,7 +139,7 @@ Lets start with the preprocessing of the data. Remember, the following parts of 
 
 The PROBA-V has 3 synthesis products, S1 (daily observations), S5 (mosaiced 5 day observation) and S10 (mosaiced 10 day observation). In the case of a 10-day synthesis product, the product has a minimum effect of cloud cover, resulting from selection of cloud-free acquisitions during the 10-day period. Additionally, their are two products amongst these daily products available, the Top of Atmosphere (TOA) and Top of Canopy (TOC). The TOC is atmospheric corrected product, and in combination with the S5 synthesis, is the data we are going to use in this tutorial.
 
-Below the data location of my PROABA_V data, and where I intend to store my new datasets (outdir)
+Below the data location of my PROABA_V data (l0_dir), and where I intend to store my new datasets (outdir)
 
 ```{r, echo=F}
 # set your data path in which you have the .tiff files of ProbaV data
@@ -158,14 +159,23 @@ start by setting our data path which contains the downloaded files. The followin
 outdir <- outdir
 ```
 
-The files should be stored in the folder structure used by vito, using YYYYMMDD notation for the folders that contain the .tif files. Where one folder per date (YYYYMMDD) contains files for all tiles. Through which folders you wish to loop the product information function, is up to you. For this tutorial, we created a preset of folder names for which we would like to receive the product information on the containing .tif files. If you wish to simply use one folder name, note that all the subfolders will be selected in the looping process, including folders that might contain incorrect/unprocessed .tif files.
+The files should be stored in the folder structure used by vito, using YYYYMMDD notation for the folders that contain the .tif files. Where one folder per date (YYYYMMDD) contains files for all tiles. Through which folders you wish to loop the product information function, is up to you. For this tutorial, we select a preset of folders based on subfolder directory lenght. In this scenario, I know that the YYYYMMDD folder notations contain the correct .tif files. Since there are several folders that still contain unprocessed PROBAV data in my 'l0_dir' path, I want to exclude them. 
+
+NOTE: If you wish to simply use one folder name as directory(l0_dir), note that all the .tif files in the subfolders will be selected in the looping process, including folders that might contain incorrect/unprocessed .tif files.
 
 ```{r}
-dir_file <- readRDS("temp/dir_list")
+# list files in the main directory that stores the YYYYMMDD folders containing the PROBAV data
+lf <- list.files(l0_dir)
+# Simple selection of folders based on name length == YYYYMMDD
+lf <- lf[nchar(lf) == 8]
+# Create coerced subfolder variable which contain all the PROBAV .tif files that you wish to process.
+dir_file <- paste0(l0_dir,'/',lf)
+
 # create a loop to apply the getProbaVinfo function on a group of folders
 datalist = list()
+tiles <- 'X17Y06'
 for (i in 1:length(dir_file)){
-  dat <- getProbaVinfo(dir_file[i], pattern = ".tif$", tiles = "X18Y02")
+  dat <- getProbaVinfo(dir_file[i], pattern = ".tif$", tiles = tiles)
   datalist[[i]] <- dat # add it to your list
 }
 # merge the created dataframes into a single dataframe of product information on your selected tiles.
@@ -188,7 +198,7 @@ QC_val <- getProbaVQClist()$clear_all
 print(paste('The Quality control value: ',QC_val), sep = "")
 ```
 
-The Radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI bands.
+The Radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI bands. However, the function will extract all the bands that the Radiometry brick contains, including the Red and NIR band. This allows you to play around with more band selections.
 
 ```{r}
 # First, select the radiometry .tif files from the download folder and which tiles to use
@@ -198,9 +208,16 @@ tiles <- c("X17Y06") # c("X16Y06","X11Y07", "X11Y08", "X11Y09", ...)
 # Lets gather the information from the radiometry band using the variables assigned above. 
 df = list()
 for (i in 1:length(dir_file)){
-  dat <- getProbaVinfo(dir_file[i], pattern = patterns, tiles = c("X17Y06"))
+  dat <- getProbaVinfo(dir_file[i], pattern = patterns, tiles = tiles)
   df[[i]] <- dat # add it to your list
 }
+
+df <- do.call(rbind, df)
+```
+
+Lets have a 'glimpse of our data'. The glimpse function shows the metadata of our dataframe created from the 'getProbaVinfo' function.
+
+```{r}
 # lets get a glimpse of the currently available data in our selection of patterns and tiles.
 glimpse(df)
 
@@ -333,8 +350,12 @@ As can be observed from the dataframe output (df_probav_sm), we get to retrieve 
 b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21")
   
 df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2015-10-21")
+```
 
-# returning first three rows of the created dataframe.
+Lets see what our dataframe contains. The output of the virtual raster stack which returns as a dataframe is a collection of relevant product information within the limits of your date selection and tile selection.
+
+```{r}
+# returning first four rows of the created dataframe.
 head(df_probav_sm, n=4)
 ```
 
@@ -343,6 +364,7 @@ Lets plot the first 4 individual bands from the first date from our virtual rast
 ```{r}
 b_vrt_s <- subset(b_vrt,1:4)
 plot(b_vrt_s)
+mtext("Plotting the 4 bands", outer=F,  cex=1, line=-0.5)
 ```
 
 ## cloudfilter example
@@ -384,31 +406,26 @@ processProbaVbatch2(l0_dir1,
                     QC_val = 1:255, outdir = probav_cloud_dir,
                     ncores = 5,
                     overwrite=F)
-
 ```
 
-Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. 
+Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. Set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (long lat, WGS84)
 
 ```{r}
+# set extent
 xmin <- -2.064549  
 xmax <- -1.074974 
 ymin <- 8.840184
 ymax <- 10.39336
-e <- extent(c(xmin,xmax,ymin,ymax))
 
-# select dir with clouds
+# select directory with clouds
 probav_cloud_dir <- paste(getwd(),'/',cloud_dir,'/', sep = "")
+# create virtual raster output name
 vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), ".vrt"))
 # load the image in our virtual raster stack
 b_vrt_cloud <- timeVrtProbaV2(probav_cloud_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin,ymin,xmax,ymax))
 
 # plot a false color image
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
-e <- drawExtent()
-xmin <- -1.328188
-xmax <- -1.321947
-ymin <- 9.873452
-ymax <- 9.876528
 ```
 
 Well that looks cloudy! Good, now we can start adding the Proba-V cloud mask and the Proba-V R package cloud filter. Lets start with visualizing the cloud detection method inbedded in the Proba-V data.
@@ -426,16 +443,14 @@ b_vrt_cloud_mask <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name 
 
 # assign virtual raster stack to new variable
 r <- b_vrt_cloud_mask
-# copy data
-r2 <- r
 ```
 
 all NA values in our raster(r) are in this scene cloud pixels. We assign a value (9999) to these cloud pixels in order to visualize them against our cloud filter function later on. 
 
 ```{r}
-r2[is.na(r)] <- 9999
-r2[r2 < 9999] <- NA
-r2 <- subset(r2,1)
+b_vrt_cloud_mask[is.na(r)] <- 9999
+b_vrt_cloud_mask[b_vrt_cloud_mask < 9999] <- NA
+b_vrt_cloud_mask <- subset(b_vrt_cloud_mask,1)
 ```
 
 Lets plot the original cloud detection method inbedded within the ProbaV data.
@@ -444,7 +459,7 @@ Lets plot the original cloud detection method inbedded within the ProbaV data.
 par(mfrow=c(1,2))
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
-plot(r2, col = 'orange', legend = F, add = T)
+plot(b_vrt_cloud_mask, col = 'orange', legend = F, add = T)
 par(mfrow=c(1,1))
 ```
 
@@ -466,23 +481,6 @@ out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")
 
 ```
 ```{r, eval=F}
-# set variables
-# threshold for blue
-  
-# df_probav_sm <- getProbaVinfo(probav_sm_dir, pattern = 'BLUE_sm.tif$', tiles = tiles)
-# s_info <- df_probav_sm
-# #s_info <- getProbaVinfo(names(x))
-# bands_select <- '(BLUE)' 
-# bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
-# 
-# bands <- s_info[s_info$date == s_info$date[1], 'band']
-# dates <- s_info[s_info$band == bands[1], 'date']
-# ydays <- s_info[s_info$band == bands[1], 'yday']
-# cf_bands = 1
-# span = 0.3
-# tiles = tiles
-# thresholds = c(-80, Inf)
-# thresholds <- matrix(thresholds, nrow=2)
 bands_select <- '(BLUE)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
@@ -512,7 +510,13 @@ blue_c_filter[blue_c_filter_copy != 2] <- NA
 blue_c_filter[blue_c_filter_copy == 2] <- 1
 ```
 ```{r, results='hide'}
-blue_c_filter <- raster(paste(getwd(),'/rsdata/probav/cloudfilter/cloudfilter.tif', sep = ""))
+blue_c_filter <- brick(out_name)
+blue_c_filter <- subset(blue_c_filter ,1)
+# copy the data set
+blue_c_filter_copy <- blue_c_filter
+# assign values
+blue_c_filter[blue_c_filter_copy != 2] <- NA 
+blue_c_filter[blue_c_filter_copy == 2] <- 1
 ```
 
 Allright! Now lets plot our cloud filter!
@@ -525,21 +529,26 @@ Lets plots the original false colour again against the 2 cloud filters
 
 ```{r}
 # data copy
-r3 <- r2
-
+r3 <- b_vrt_cloud_mask
+# assign pixel values 
 r3[blue_c_filter == 1] <- 1
+# set breakpoints
 breakpoints <- c(0,2,9999)
+# Assign colors to breakpoints
 colors <- c("darkred","orange")
+# Set layout
 par(mfrow=c(1,3), layout(matrix(1:6, 1,1, byrow = TRUE)))
+# Plotting
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
-plot(r2, col = 'orange', legend = F, add = T)
+plot(b_vrt_cloud_mask, col = 'orange', legend = F, add = T)
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 plot(r3,breaks=breakpoints,col=colors, add = T, legend = F)
+# Reset layout
 par(mfrow=c(1,1))
 ```
 
-The cloud detection algorythm inbedded in the ProbaV data detects most of the clouds. Our additional cloud filter marks some additional clouds/shadow missed by the cloud detection algorythm. As can be observed, these missed cloud pixels are mainly distributed near the edges of clouds.
+The cloud detection algorythm inbedded in the ProbaV data detects most of the clouds. Our additional cloud filter marks some clouds/shadow fragments missed by the cloud detection algorythm. As can be observed, these missed cloud pixels are mainly distributed near the edges of existing clouds.
 
 
 ## Time series
@@ -554,7 +563,7 @@ vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse
 b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 # Select random pixel of our raster stack
-z <- zoo(c(b_vrt[500]), getZ(b_vrt))
+z <- zoo(c(b_vrt[runif(1, 0, ncell(b_vrt))]), getZ(b_vrt))
 
 #unique(df_probav_sm$band)
 # read and assign the acquisition dates to a variable
@@ -563,15 +572,30 @@ df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vr
 bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
 dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
 
+```
+
+Lets apply the smoothLoess function. This function requires a time series [ts](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html) object. We created one using the [zoo](https://cran.r-project.org/web/packages/zoo/index.html) package. The smoothLoess function uses local polynomial regression fitting, by using the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) function. The smoothLoess function requires the dates to match with the index values, hence we retrieved the matching dates above. The threshold parameter allows you to set the upper and lower threshold for non-outlier distances from the smoothed time series. In other words, it masks certain values as outliers based on your defined threshold. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object. 
+
+```{r}
 # use smoothloes to create time series
+# We excluded the threshold parameter and simply plot the output of the smoothLoess function. 
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
-plot(f)
+plot(f, main = "plotting time series.
+     x = NDVI values for a given time,
+     QC_good = Quality value, where 0 is missing and 1 is available,
+     filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")
+# Observe the difference between span widths of the degree of smoothing.
+f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.75)
+plot(f, main = "plotting time series.
+     x = NDVI values for a given time,
+     QC_good = Quality value, where 0 is missing and 1 is available,
+     filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")
 ```
 
 ## get harmonic metrics
 
 We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a liner harmonic model to the time series.
-The coefficients of this model are then used as metrics for overall level and seasonality.
+The coefficients of this model are then used as metrics for overall level and seasonality. The number of output coefficients depend on the parameter 'order'. QC-good parameter ensures that values that are missing (0 or not 1) are omitted. Also values that are marked as additional clouds by the smoothLoess function (value 2 in QC-good) will thus be ignored by the linear model.
 
 ```{r,eval=T}
 d <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
@@ -580,34 +604,40 @@ d
 
 ## Run metrics with a raster brick output
 
-The following function runs the getHarmMetrics to our virtual raster brick and returns the model coefficients. 
+The following function runs the getHarmMetrics to our virtual raster brick and returns the model coefficients. Each coefficient is thus returned as a raster layer, where the output number of rasterlayers depend on the 'order' that you assigns. Hence the function
 
+Lets start of with setting the required variables for the function parameters. 
 ```{r, eval=F}
-# No scale
-
 # create output name on the metrics
 out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
 
 bands_select <- '(BLUE|SWIR|NDVI)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
-# Select all dates of the blue band
-b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01", te = c(xmin, ymin, xmax, ymax))
 
-df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2016-03-01")
+# Select all dates of the blue band
+b_vrt <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
+
+df_probav_sm <- timeVrtProbaV2(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+
+bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
+dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
 ```
 
-Check layers, bands, blocks and cores! 
+Check layers, bands, blocks and cores! Each block represents the number of rows that the 'getHarmMetricsSpatial' function applies to. This speeds up the calculation time significantly. As normally the linear model of getHarmMetrics would be calculated to each cell of a rasterbrick, it now applies the function simultaneously to 15 (or n minrows) rows in parallel. 
 
-```{r,eval=F}
+```{r,eval=T}
 # --- get metrics ---  #
 cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
             nrow(df_probav_sm), paste0(bands, collapse = " "),
             blockSize(b_vrt, minrows = minrows)$n, mc.cores))
 ```
 
+Now lets try out the getHarmMetricsSpatial function! Most of the functions parameters must be familiar by now. The cf-bands (cloud_free bands) is the coerced selection of the bands to which you would like to apply the cloud filter. My 'bands-select' variable is set to 3 bands, the BLUE, SWIR and NDVI. By setting the cf-bands to c(1,2), I apply the additional cloud filter to band 1 and 2 from my selected bands, in this scenario the BLUE and SWIR. The thresholds follow a similar process, where the given thresholds below apply to the first 2 bands. Each 2 values represent the min and max of your selected threshold, which are the min/max values to detect addtional clouds/shadow. 
 
-```{r}
+The getHarmMetricsSpatial is basicly an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. Depending on your selected region of interest in the timeVrtProbaV2 function and your available cores/memory, this could take some time! So feel free to grab something to eat or a coffee.
+
+```{r, eval=F, results= 'hide'}
 b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = mc.cores,
                                       logfile=logfile,
                                       overwrite=T, span=0.3,
@@ -616,18 +646,17 @@ b_metrics <- getHarmMetricsSpatial_JE(x = b_vrt, minrows = minrows, mc.cores = m
                                       order = 1, datatype="INT2S")
 ```
 
-
-
 ## plot the metrics
 
-```{r,eval=F}
+```{r,eval=T}
 # metrics info
-b_metrics
+b_metrics <- brick(out_name)
 
 # band order
 # names c("min", "max", "intercept", names(lmh$coefficients)[-1])
 
 # plotting metrics
+s <- subset(b_metrics, 1:6)
 plot(b_metrics)
 ```
 
@@ -635,7 +664,9 @@ plot(b_metrics)
 
 Lets classify! Prepare classification data
 
-```{r}
+---------------------------------------SCRIPT UPDATE, DONT RUN THIS SECTION----------------------------------
+
+```{r,eval=F}
 pnt_JD <- readOGR(file.path(getwd(), "rsdata/ref_data"), "Ref_dataJD", stringsAsFactors = F)
 names(pnt_JD) <- c("id", "Description", "ID_nr", "x", "y", "z", "m")
 pnt_JD[,-(4:7)]
@@ -652,7 +683,7 @@ plot(pnt_JD, add = T, col = 'red')
 
 Extract cell value per reference point and create a merged dataframe
 
-```{r}
+```{r,eval=F}
 # ----------------------- extract per tile ------------------#
 tiles <- c("X18Y02") # ..., "X17Y06", "X18Y06", "X19Y06")
 
@@ -673,7 +704,8 @@ df_covs_tsed <- foreach(tile=tiles, .combine=rbind, .inorder = T) %dopar% {
 ```
 
 Merged dataframe on ref data and cell values
-```{r}
+
+```{r,eval=F}
 # JD
 df_ref_JD <- pnt_JD@data[df_covs_tsed$ID,]
 df_model_JD <- cbind(ID_nr=df_ref_JD$ID_nr, df_covs_tsed)
@@ -681,7 +713,8 @@ df_model_JD <- cbind(ID_nr=df_ref_JD$ID_nr, df_covs_tsed)
 ```
 
 Clear NAs
-```{r}
+
+```{r,eval=F}
 # exclude NAs
 cc <- complete.cases(df_model_JD)
 table(df_model_JD$ID_nr[cc])
@@ -695,7 +728,7 @@ glimpse(df_model_JD[cc, -(2:4)])
 
 "Ranger is a fast implementation of random forest (Breiman 2001) or recursive partitioning, particularly suited for high dimensional data. Classification, regression, probability estimation and survival forests are supported. Classification and regression forests are implemented as in the original Random Forest (Breiman 2001), survival forests as in Random Survival Forests (Ishwaran et al. 2008). For probability estimation forests see Malley et al. (2012)." [source](https://github.com/imbs-hl/ranger)
 
-```{r}
+```{r,eval=F}
 # run ranger on Land cover classification
 cat("------- ranger ---------")
 ra_JD <- ranger(LC ~., df_model_JD[cc, -(1:4)], num.trees=500, write.forest=T,
@@ -706,7 +739,7 @@ saveRDS(ra_JD, "data/models/ra_JD_merge5_x16.rds")
 print(ra_JD)
 ```
 
-
+dont evaluate this section
 ```{r, eval=F}
 #### ------------- predict -------------------------------------------
 # using ranger
@@ -730,7 +763,7 @@ for (tile in tiles){
 ```
 
 Check output!
-```{r}
+```{r,eval=F}
 check <- raster(paste(getwd(),"/rsdata/probav/results/JD/pred_JD_X18Y02.tif", sep=""))
 plot(check)
 ```
