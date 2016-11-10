@@ -671,12 +671,14 @@ pts <- read.csv(text = csv)
 #save(pts, file = 'ref/ref_JD')
 #ptss <-load('ref/ref_JD')
 
-#write.csv(y, "ref/ref_JD.csv")
+#write.csv(pts, "ref/ref_JD.csv")
 #pnt_JD <- readOGR(file.path(getwd(), "ref"), "ref_Glc2ViirsStepNmoGeowikiGlob_point_africa", stringsAsFactors = F)
 # crop reference data to metrics extent
 
+#pts <- read.csv("ref/ref_JD.csv")
 # to dataframe
 #pts=as.data.frame(pnt_JD)
+#pts <- pts[,c("ID_1","Y","X","G9_cl1")]
 # fix coordinates error
 coordinates(pts) <- ~X+Y
 # add projection
