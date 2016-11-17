@@ -409,7 +409,8 @@ processProbaVbatch(l0_dir1,
                     overwrite=F)
 ```
 
-Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. Set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (long lat, WGS84)
+
+Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. Set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (lon lat, WGS84)
 
 ```{r}
 # set extent
@@ -429,6 +430,7 @@ b_vrt_cloud <- timeVrtProbaV(probav_cloud_dir, pattern = bands_sel, vrt_name = v
 plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')
 ```
 
+
 Well that looks cloudy! Good, now we can start adding the Proba-V cloud mask and the Proba-V R package cloud filter. Lets start with visualizing the cloud detection method inbedded in the Proba-V data.
 
 ```{r}
@@ -446,6 +448,7 @@ b_vrt_cloud_mask <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name =
 r <- b_vrt_cloud_mask
 ```
 
+
 all NA values in our raster(r) are in this scene cloud pixels. We assign a value (9999) to these cloud pixels in order to visualize them against our cloud filter function later on. 
 
 ```{r}
@@ -453,6 +456,7 @@ b_vrt_cloud_mask[is.na(r)] <- 9999
 b_vrt_cloud_mask[b_vrt_cloud_mask < 9999] <- NA
 b_vrt_cloud_mask <- subset(b_vrt_cloud_mask,1)
 ```
+
 
 Lets plot the original cloud detection method inbedded within the ProbaV data.
 
@@ -464,21 +468,45 @@ plot(b_vrt_cloud_mask, col = 'orange', legend = F, add = T)
 par(mfrow=c(1,1))
 ```
 
-Looks good! The orange area here visualises the clouds/shadow and bad pixels detected by the cloud detection algorythm within Proba-V. If you look closely, you can still observe light cloud and shadow remnants, mostly near the orange masked clouds. Altough this original cloud detection algorythm allready masked out almost all clouds, we would like to clear as many clouds (and shadow) as possible, so we have a clear reflectance of the pixels.
 
-Lets apply the additional cloud filter! In this example we use the blue band to detect additional cloud and shadow remnants in the landscape. The BlUE and SWIR bands are conventionally sensitive in cloud detection. For our final classification, in the section 'Spatial Harmonic Metrics', we will use both BLUE and SWIR for additional cloud detection and removal. 
+Looks good! The orange area here visualises the clouds/shadow and bad pixels detected by the cloud detection algorythm within Proba-V. If you look closely, you can still observe cloud and shadow remnants, mostly near the orange masked clouds. Altough this original cloud detection algorythm allready masked out almost all clouds, we would like to clear as many clouds (and shadow) as possible, so we have a clear reflectance of the pixels. Because remaining clouds in Remote sensing time-series can impair the extraction of seasonal information. 
+
+Lets apply the additional cloud filter! In this example we use the blue band to detect additional cloud and shadow remnants in the landscape. The BlUE and SWIR bands are conventionally sensitive in cloud detection. For our final classification, in the section *Spatial Harmonic Metrics*, we will use both BLUE and SWIR for additional cloud detection and removal. 
+
+The cloud_filter function applies the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) through the 'ProbaV::smoothloess' function. Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. The threshold values are determined visually, and might require testing to select the optional parameters for cloud detection. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object (We will test this later). 
+
 
 ```{r}
+# select bands and create virtual name output
 bands_select <- '(BLUE)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
+
 # Select all dates of the blue band
 b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01", te = c(xmin, ymin, xmax, ymax))
 
+# create output folder and name
 dir.create('/userdata/cloud_filter', showWarnings = F)
 out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")
 
 ```
+
+
+The 'cloud_filter' function is an intensive computational and disk volume demanding function, as it returns all the .tif files (as brick) within you date selection. However, since we select a subset by setting an extent in the 'timeVrtProbaV' function, the output files should not be that big in volume. The 'cloud_filter' is not part of the 'probaV' package, but is derived from it. The threshold parameters are similar to existing functions within the 'probaV' package. Where:
+
+  - x = Virtual stack of .tif files
+  - probav_sm_dir: Directory containing the processed probaV bands as a result of the 'ProcessProbaVBatch'
+  - pattern: Band selection including the _sm (state mask)
+  - tiles: tile to process
+  - minrows: See section on 'setting parameters'
+  - mc.cores: See section on 'setting parameters'
+  - logfile: See section on 'setting parameters'
+  - span: Degree of smoothing
+  - cf_bands: The selection (numeric) of the bands you would like to use for the cloudfilter function
+  - Thresholds: The distance values from the smoothloess model to mask as clouds/shadow
+  - filename: output file name
+  
+
 ```{r, eval=F}
 bands_select <- '(BLUE)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
@@ -492,14 +520,18 @@ cloud_filter(x = b_vrt, probav_sm_dir = probav_sm_dir, pattern = bands_sel,
 blue_c_filter <- brick(out_name)
 ```
 
-Lets select the same data as our false colour image from the raster brick we just created. 
+
+Lets select the same *date* as our false colour image from the raster brick we just created. In this case, the first raster subset of our filter.
+
 
 ```{r, eval=F}
 # select date
 blue_c_filter <- subset(blue_c_filter ,1)
 ```
 
-The cloud_filter function returns the Quality Control values. Meaning: "QC" is the status of observations: 0=Missing/band input QC, 1=good, 2=temporal outlier. Here we assign new values to our raster to visualise what the SmoothLoes function detects by the extra clouds
+
+The 'cloud_filter' function returns the Quality Control values. Meaning: "QC" is the status of observations: 0=Missing/band input QC, 1=good, 2=temporal outlier. Here we assign new values to our raster to visualise what the 'SmoothLoes' function detects on clouds/shadow
+
 
 ```{r, eval=F}
 # copy the data set
@@ -518,13 +550,17 @@ blue_c_filter[blue_c_filter_copy != 2] <- NA
 blue_c_filter[blue_c_filter_copy == 2] <- 1
 ```
 
+
 Allright! Now lets plot our cloud filter!
+
 
 ```{r}
 plot(blue_c_filter, col = 'darkred', legend = F)
 ```
 
+
 Lets plots the original false colour again against the 2 cloud filters
+
 
 ```{r}
 # data copy
@@ -547,42 +583,54 @@ plot(r3,breaks=breakpoints,col=colors, add = T, legend = F)
 par(mfrow=c(1,1))
 ```
 
-The cloud detection algorythm inbedded in the ProbaV data detects most of the clouds. Our additional cloud filter marks some clouds/shadow fragments missed by the cloud detection algorythm. As can be observed, these missed cloud pixels are mainly distributed near the edges of existing clouds.
+
+The cloud detection algorythm inbedded in the ProbaV data detects most of the clouds. The additional 'cloud_filter' marks some clouds/shadow fragments missed by the cloud detection algorythm. As can be observed, these missed cloud pixels are mainly distributed near the edges of existing clouds.
 
 
 ## Time series
 
 Lets start of with creating a small time-series subset of a single pixel, randomly chosen from a raster stack. Since we are interested in the seasonal trends of vegetation, lets select the NDVI band for the following example. First step is to create a virtual raster stack from a selected time range on our region of interest (extent).
 
+
 ```{r,eval=T}
+# select bands
 bands_select <- '(NDVI)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
+
 # Select all dates of the blue band
 b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 # Select random pixel of our raster stack
 z <- zoo(c(b_vrt[runif(1, 0, ncell(b_vrt))]), getZ(b_vrt))
 
-#unique(df_probav_sm$band)
 # read and assign the acquisition dates to a variable
 df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
 
-bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
-dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
-
 ```
 
-Lets apply the smoothLoess function. This function requires a time series [ts](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html) object. We created one using the [zoo](https://cran.r-project.org/web/packages/zoo/index.html) package. The smoothLoess function uses local polynomial regression fitting, by using the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) function. The smoothLoess function requires the dates to match with the index values, hence we retrieved the matching dates above. The threshold parameter allows you to set the upper and lower threshold for non-outlier distances from the smoothed time series. In other words, it masks certain values as outliers based on your defined threshold. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object. 
+
+Lets apply the smoothLoess function. This function requires a time series [ts](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html) object. We create one using the [zoo](https://cran.r-project.org/web/packages/zoo/index.html) package. The smoothLoess function uses local polynomial regression fitting, by using the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) function. The smoothLoess function requires the dates to match with the index values, hence we retrieved the matching dates above. 
+
+*Smoothloess function*
+Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'probaV::smoethloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object. 
+
+The parameters of the LOESS model and the thresholds were chosen based on expert knowledge and visual comparison of the results within the semi-arid region of Africa. These parameters could thus change if you select a different eco-regional area, and may require testing and comparing results for optimal parameter selection.
 
 ```{r}
 # use smoothloes to create time series
+
+# retrieve band and date information from dataframe
+bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
+dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
+
 # We excluded the threshold parameter and simply plot the output of the smoothLoess function. 
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
 plot(f, main = "plotting time series.
      x = NDVI values for a given time,
      QC_good = Quality value, where 0 is missing and 1 is available,
      filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")
+
 # Observe the difference between span widths of the degree of smoothing.
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.75)
 plot(f, main = "plotting time series.
@@ -591,14 +639,27 @@ plot(f, main = "plotting time series.
      filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")
 ```
 
-## get harmonic metrics
 
-We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a liner harmonic model to the time series.
-The coefficients of this model are then used as metrics for overall level and seasonality. The number of output coefficients depend on the parameter 'order'.  QC-good parameter ensures that values that are missing (0 or not 1) are omitted. Also values that are marked as additional clouds by the smoothLoess function (value 2 in QC-good) will thus be ignored by the linear model.
+## Harmonic metrics
+
+We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a liner harmonic model to the time series. The coefficients of this linear model are then used as metrics for the descriptive statistics (such as min max values) and seasonality (cos, sin). 
+
+The number of output coefficients (metrics) depend on the parameter 'order'. QC-good parameter ensures that values that are missing (0 or not 1) are omitted. Also values that are marked as additional clouds by the smoothLoess function (value 2 in QC-good) will thus be ignored by the linear model.
+
 
 ```{r,eval=T}
 model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
 model_metrics
+```
+
+Lets see the difference in output from different 'order' levels. If you select a higher  
+
+```{r, eval=T}
+# Order 1
+cat("The metrics returned by the getHarmMetrics function, with order 1, are the: ", names(model_metrics))
+# Order 2
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 2)
+cat("The metrics returned by the getHarmMetrics function, with order 2, are the: ", names(model_metrics))
 ```
 
 ## Spatial Harmonic Metrics
@@ -730,15 +791,7 @@ b_metrics <- getHarmMetricsSpatial(x = b_vrt, minrows = 5, mc.cores = 5,
 
 Once the function has succesfully passed, we can see the output! The output is a brick of rasters that store the model coefficients (or metrics) applied in the getHarmMetricsSpatial function. Thus, the amount of bands returned (as raster layers) depends on the chosen 'order' in the getHarmMetricsSpatial. Due to the parallelization of the function, the names of the output (brick) get lost, and the chronological order with it. 
 
-Since the getHarmMetricsSpatial funtion uses the getHarmMetrics function, but applies it to a raster, we can see the names of the metrics by evaluating our previously getHarmMetrics section. Lets see the difference in output from different 'order' levels. 
-
-```{r, eval=T}
-# Order 1
-cat("The metrics returned by the getHarmMetrics function, with order 1, are the: ", names(model_metrics))
-# Order 2
-model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 2)
-cat("The metrics returned by the getHarmMetrics function, with order 2, are the: ", names(model_metrics))
-```
+Since the getHarmMetricsSpatial funtion uses the getHarmMetrics function, but applies it to a raster, we can see the names of the metrics by evaluating our previously getHarmMetrics section. 
 
 Lets plot the first 6 layers from the created metrics brick. As can be observed, the names are lost of the bands, and the raster values have been scaled by the selected 'scale_f' parameter in the getHarmMetricsSpatial function. 
 
@@ -748,6 +801,11 @@ b_metrics <- brick(out_name)
 # plotting metrics
 sub_plot <- subset(b_metrics, 1:6)
 plot(sub_plot)
+```
+
+```{r, eval=F}
+out_name <- file.path("/userdata/metricsJD", paste0(tiles,"_harm_lm2_loess_03_scaled_Full.envi"))
+b_metrics <- brick(out_name)
 ```
 
 ## Classification process
@@ -864,7 +922,7 @@ for (tile in tiles){
   out_name <- paste0(getwd(), "/rsdata/probav/results/pred_JD_", tile,  ".tif")
 
   pred_JD <- mcPredictSpatial(model, b_metrics, b_clumps=NULL, df_clumps = NULL, type='response',
-                                mc.cores = 5, ranger_threads = 1, minrows = 12, logfile = logfile,
+                                mc.cores = 10, ranger_threads = 1, minrows = 12, logfile = logfile,
                                 datatype ="INT1U", of ="GTiff", out_name = out_name)
   
   print(pred_JD)
@@ -887,6 +945,38 @@ my_col = c('yellow','darkgreen','lightgreen')
 levelplot(r, col.regions=my_col, xlab="", ylab="")
 ```
 
+And the full tile we have been processing in the tutorial. Below the tif. tile with the reference points, and the classified image. 
+
+```{r,eval=T, echo=F}
+ra_JD <- readRDS("data/models/ra_JD_merge5_x16_full.rds")
+tiles <- c("X17Y06")
+r <- raster(paste0(getwd(), "/rsdata/probav/results/pred_JD_full_", tile,  ".tif"))
+rr <- as.factor(r)
+rat <- levels(rr)[[1]]
+rat[["landcover"]] <- levels(ra_JD$predictions) # double check this
+levels(rr) <- rat
+
+# add/change colours if you have more legend items
+my_col = c('chocolate4','yellow','darkgreen','green','yellowgreen')
+
+#
+csv <- getURL("https://raw.githubusercontent.com/JornDallinga/JornDallinga.github.io/master/ref/ref_JD.csv")
+pts <- read.csv(text = csv)
+
+coordinates(pts) <- ~X+Y
+# add projection
+projection(pts) <- '+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'
+# copy dataset
+pnt_JD <- pts
+# crop dataset
+pnt_JD <- crop(pnt_JD, r)
+
+# plot raster with sampling points
+plot(r)
+plot(pnt_JD, add = T, col = 'red')
+## Plot
+levelplot(rr, col.regions=my_col, xlab="", ylab="")
+```
 
 Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. Specially to areas that occasionally receive snow! 
 
