@@ -615,7 +615,7 @@ Lets apply the smoothLoess function. This function requires a time series [ts](h
 *Smoothloess function*
 Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'probaV::smoethloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object. 
 
-The parameters of the LOESS model and the thresholds were chosen based on expert knowledge and visual comparison of the results within the semi-arid region of Africa. These parameters could thus change if you select a different eco-regional area, and may require testing and comparing results for optimal parameter selection.
+The parameters of the 'LOESS' model and the thresholds were chosen based on expert knowledge and visual comparison of the results within the semi-arid region of Africa. These parameters could thus change if you select a different eco-regional area, and may require testing and comparing results for optimal parameter selection.
 
 ```{r}
 # use smoothloes to create time series
@@ -642,9 +642,9 @@ plot(f, main = "plotting time series.
 
 ## Harmonic metrics
 
-We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a linear harmonic model to the time series. The coefficients of this linear model are then returned as metrics (such as min,max values) and seasonality (cos, sin, trend). Here the dates represent the frequency within the harmonic seasonal model. The Cosine (cos) and Sine (sin) represent the amplitude and phase shift, respectively. 
+We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a linear harmonic model to the time series. The coefficients of this linear model are then returned as metrics (such as min,max values) and seasonality (cos, sin, trend). Here the dates represent the frequency within the harmonic seasonal model. The Cosine (cos) and Sine (sin) represent the amplitude and phase shift, respectively. Second or Third order harmonics will  create an additional output of the Cosine and Sine multiplied the selected order. Higher order harmonics will be added to the lower order harmonics.
 
-QC-good parameter ensures that values that are missing (0 or not 1) are omitted. Also values that are marked as additional clouds by the 'smoothLoess' function (value 2 in QC-good) will thus be ignored by the linear model.
+QC-good parameter ensures that reflectance values that are missing (0 or not 1) are omitted. Also reflectance values that are marked as clouds/shadow by the 'smoothLoess' function (value 2 in QC-good) will thus be ignored by the linear model.
 
 
 ```{r,eval=T}
@@ -654,9 +654,10 @@ model_metrics
 ```
 
 
-The number of output coefficients (metrics) depend on the parameter 'order'. Lets see the difference in output from different 'order' levels. 
+As previously explained, the number of output coefficients (metrics) depend on the parameter 'order' of harmonics. Lets see the difference in output from different 'order' levels. 
 
 ```{r, eval=T}
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = F)
 # Order 1
 cat("The metrics returned by the getHarmMetrics function, with order 1, are the: ", names(model_metrics))
 # Order 2
@@ -947,9 +948,11 @@ my_col = c('yellow','darkgreen','lightgreen')
 levelplot(r, col.regions=my_col, xlab="", ylab="")
 ```
 
-And the full tile we have been processing in the tutorial. Below the tif. tile with the reference points, and the classified image. 
+And lets plot the full tile we have been processing in the tutorial. 
+Below the tif. tile with the reference points, followed by our classified image. 
 
-```{r,eval=T, echo=F}
+
+```{r,eval=T, echo=F, warning=F, message=F}
 ra_JD <- readRDS("data/models/ra_JD_merge5_x16_full.rds")
 tiles <- c("X17Y06")
 r <- raster(paste0(getwd(), "/rsdata/probav/results/pred_JD_full_", tile,  ".tif"))
@@ -961,7 +964,7 @@ levels(rr) <- rat
 # add/change colours if you have more legend items
 my_col = c('chocolate4','yellow','darkgreen','green','yellowgreen')
 
-#
+# reload the reference data
 csv <- getURL("https://raw.githubusercontent.com/JornDallinga/JornDallinga.github.io/master/ref/ref_JD.csv")
 pts <- read.csv(text = csv)
 
@@ -974,10 +977,17 @@ pnt_JD <- pts
 pnt_JD <- crop(pnt_JD, r)
 
 # plot raster with sampling points
+library('rworldmap')
+par(mfrow=c(1,2))
+sPDF <- getMap()
+mapCountryData(sPDF, nameColumnToPlot='continent', addLegend = F, mapRegion = 'Africa', mapTitle = 'Africa')
+plot(extent(r), add = T)
 plot(r)
 plot(pnt_JD, add = T, col = 'red')
 ## Plot
+par(mfrow=c(1,1))
 levelplot(rr, col.regions=my_col, xlab="", ylab="")
+
 ```
 
 Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. The approach is less suited to distinguish ice clouds from snow/ice! 
