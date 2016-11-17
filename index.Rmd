@@ -503,7 +503,7 @@ The 'cloud_filter' function is an intensive computational and disk volume demand
   - logfile: See section on 'setting parameters'
   - span: Degree of smoothing
   - cf_bands: The selection (numeric) of the bands you would like to use for the cloudfilter function
-  - Thresholds: The distance values from the smoothloess model to mask as clouds/shadow
+  - Thresholds: The distance (reflectance) values from the smoothloess model to mask as clouds/shadow
   - filename: output file name
   
 
@@ -642,17 +642,19 @@ plot(f, main = "plotting time series.
 
 ## Harmonic metrics
 
-We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a liner harmonic model to the time series. The coefficients of this linear model are then used as metrics for the descriptive statistics (such as min max values) and seasonality (cos, sin). 
+We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a linear harmonic model to the time series. The coefficients of this linear model are then returned as metrics (such as min,max values) and seasonality (cos, sin, trend). Here the dates represent the frequency within the harmonic seasonal model. The Cosine (cos) and Sine (sin) represent the amplitude and phase shift, respectively. 
 
-The number of output coefficients (metrics) depend on the parameter 'order'. QC-good parameter ensures that values that are missing (0 or not 1) are omitted. Also values that are marked as additional clouds by the smoothLoess function (value 2 in QC-good) will thus be ignored by the linear model.
+QC-good parameter ensures that values that are missing (0 or not 1) are omitted. Also values that are marked as additional clouds by the 'smoothLoess' function (value 2 in QC-good) will thus be ignored by the linear model.
 
 
 ```{r,eval=T}
-model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1)
+f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = T)
 model_metrics
 ```
 
-Lets see the difference in output from different 'order' levels. If you select a higher  
+
+The number of output coefficients (metrics) depend on the parameter 'order'. Lets see the difference in output from different 'order' levels. 
 
 ```{r, eval=T}
 # Order 1
@@ -978,7 +980,7 @@ plot(pnt_JD, add = T, col = 'red')
 levelplot(rr, col.regions=my_col, xlab="", ylab="")
 ```
 
-Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. Specially to areas that occasionally receive snow! 
+Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. The approach is less suited to distinguish ice clouds from snow/ice! 
 
 This tutorial has been tested on the S5 (5-day) 100m resolution product of Proba-V. It might return unexpected results or errors if attempted on different datasets, and has not been tested yet on other sensors, and products of ProbaV.
 
