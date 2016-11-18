@@ -4,8 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
-  <meta name="author" content="Jorn Dallinga, PROBA-V package used from Johannes Eberenz" />
-  <title>Proba-V</title>
+  <meta name="author" content="Jorn Dallinga, ProbaV package used from Johannes Eberenz" />
+  <title>ProbaV</title>
   <style type="text/css">code{white-space: pre;}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -863,9 +863,9 @@
 </head>
 <body>
 <div id="header">
-<h1 class="title">Proba-V</h1>
-<h2 class="author">Jorn Dallinga, PROBA-V package used from Johannes Eberenz</h2>
-<h3 class="date">17 November, 2016</h3>
+<h1 class="title">ProbaV</h1>
+<h2 class="author">Jorn Dallinga, ProbaV package used from Johannes Eberenz</h2>
+<h3 class="date">18 November, 2016</h3>
 </div>
 <title>
 ProbaV
@@ -874,15 +874,15 @@ ProbaV
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
-<h1 id="wur-proba-v-workflow-wur-logo">WUR PROBA-V workflow <img src="http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png" alt="WUR logo" /></h1>
+<h1 id="wur-probav-workflow-wur-logo">WUR ProbaV workflow <img src="http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png" alt="WUR logo" /></h1>
 <div class="row">
 
 </div>
 <h2 id="introduction">Introduction</h2>
-<p>the PROBA-V instrument</p>
+<p>the ProbaV instrument</p>
 <p>ESA is currently preparing the launch of the Sentinel-3 satellites, of which the first one (Sentinel-3A) is foreseen for September 29tn, 2015. The Sentinel missions are developed for the operational needs in land, ocean, and atmospheric monitoring within the European Copernicus programme. However, between the end-of-life of SPOT-VGT and the launch of the Sentinel-3 satellites, a rather large time gap of about 3 years would occur, which would imply a discontinuation of the vegetation monitoring time series.</p>
-<p>In order to preserve this observational continuity, Belgium decided to build a small satellite mission based on the successful ESA PROBA expertise, using state-of-the-art-technology. PROBA-V (with &quot;V&quot; standing for Vegetation) was designed by a full Belgian consortium, fulfills all of the vegetation users specifications and is complement to the Sentinel-3 satellites to be launched after PROBA-V.</p>
-<p>PROBA-V has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products, available at 100 m, 300 m, and 1 km. The products can be downloaded from <a href="www.vito-eodata.be">vito</a>. <a href="http://proba-v.vgt.vito.be/">source quoted directly</a></p>
+<p>In order to preserve this observational continuity, Belgium decided to build a small satellite mission based on the successful ESA PROBA expertise, using state-of-the-art-technology. ProbaV (with &quot;V&quot; standing for Vegetation) was designed by a full Belgian consortium, fulfills all of the vegetation users specifications and is complement to the Sentinel-3 satellites to be launched after ProbaV.</p>
+<p>ProbaV has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products, available at 100 m, 300 m, and 1 km. The products can be downloaded from <a href="www.vito-eodata.be">vito</a>. <a href="http://ProbaV.vgt.vito.be/">source quoted directly</a></p>
 <h2 id="preperation">Preperation</h2>
 <p>This script has been tested and runs on a LINUX Centos machine located on the ESA cloud toolbox, but might require some tweaking if used on other OS or versions. Most functions are designed to run parallel on multi-core machines, such as the cloud toolbox. Al though this example script uses a small case study throughout the tutorial, when extending the functions to larger areas, system time could become significantly slower (depending on how many cores you have to your disposal).</p>
 System on which the script has been tested:
@@ -896,7 +896,7 @@ System on which the script has been tested:
 ## [1] "linux-gnu"
 </code></pre>
 </div>
-<p>The data used within these scripts can be downloaded from the <a href="http://proba-v.vgt.vito.be/">vito</a> website. Lets start with loading the required libraries and packages to illustrate a workflow on working with the PROBA-V data. Additionally, we have to set the library path if this has not been set previously. When working from the cloud toolbox, errors could occur with loading packages when the library path has not been added.</p>
+<p>The data used within these scripts can be downloaded from the <a href="http://ProbaV.vgt.vito.be/">vito</a> website. Lets start with loading the required libraries and packages to illustrate a workflow on working with the ProbaV data. Additionally, we have to set the library path if this has not been set previously. When working from the cloud toolbox, errors could occur with loading packages when the library path has not been added.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -920,7 +920,7 @@ library(RCurl)
 library(stringr)
 library(rasterVis)</code></pre>
 </div>
-<p>The Proba-V package used can be viewed <a href="https://github.com/johanez/probaV">here</a>. Many fixes, including spelling, and further updating of the package is still underway. Therefore, we download and source the fixed scripts directly using the following 'source_ttps' function from another github repository.</p>
+<p>The ProbaV package used can be viewed <a href="https://github.com/johanez/ProbaV">here</a>. Many fixes, including spelling, and further updating of the package is still underway. Therefore, we download and source the fixed scripts directly using the following 'source_ttps' function from another github repository.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -937,13 +937,13 @@ library(rasterVis)</code></pre>
 source_https("https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/cloud_filter.R")</code></pre>
 </div>
 <h2 id="data-download">Data download</h2>
-<p>This example script uses data existing on the cloud toolbox and follows an existing directory structure. Downloading ProvaV data will not create that directory structure yet. Thus, this script will work when following the ProbaV directory structure on the cloud toolbox, but not yet with downloading the data manually to a certain directory. But if you would like to know how to download the ProbaV data, below follows an example.</p>
-<p>Lets download the PROBA-V tiles by using coordinates!</p>
+<p>This example script uses data existing on the cloud toolbox and follows an existing directory structure. Downloading ProvaV data will not create that directory structure yet. Thus, this script will work when following the ProbaV directory structure on the cloud-toolbox/MEP, but not yet with downloading the data manually to a certain directory. But if you would like to know how to download the ProbaV data, below follows an example.</p>
+<p><em>It is preferred to requests the datasets from vito through the MEP.</em> <em>Thus, the data download section can be skipped if you allready have the data!</em></p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r"># Select the location for which you wish to download the PROBA-V  tiles for. 
+<pre style=""><code class="source r"># Select the location for which you wish to download the ProbaV  tiles for. 
 x <- 10.00 # Longitude
 y <- 8.00 # Latitude
 
@@ -951,7 +951,7 @@ y <- 8.00 # Latitude
 tile <- probaVTileFromCoords(x, y)
 tile_str <- paste("\'*",tile,"*\'", sep ="")</code></pre>
 </div>
-<p>To download data from the PROBA-V vito website, we need to be a registerd user (free). If you dont allready have an account, feel free to make one by following this <a href="http://www.vito-eodata.be/PDF/portal/Application.html#Home">link</a>. Assign the username and password to a variable, which you can enter below.</p>
+<p>To download data from the ProbaV vito website, we need to be a registered user (free). If you don't already have an account, feel free to make one by following this <a href="http://www.vito-eodata.be/PDF/portal/Application.html#Home">link</a>. Assign the username and password to a variable, which you can enter below.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -968,19 +968,19 @@ dirloc <- paste(getwd(), '/2015/', sep = "")
 # Create file directory if it does not exist yet
 dir.create(file.path(dirloc), showWarnings = FALSE)</code></pre>
 </div>
-<p>Use wget to download the data. wget has be passed directly in the terminal. Therefore, we pass the string to the system command. In this example, the link in the string will have to be adjusted manually to your request. The dates at the end of the http adres below, allow you to download for a specific year, month and/or day. If you wish to download all ProbaV data for a specific year (e.g. 2016), then change the dates to '2016/?/?mode=tif'. The data will be downloaded into the directory set in the previous code (dirloc). For more examples on how to download ProbaV data on different operating systems, please follow this <a href="http://www.vito-eodata.be/PDF/image/Data_pool_manual.pdf">link</a>.</p>
+<p>Use wget to download the data. wget has be passed directly in the terminal. Therefore, we pass the string to the system command. In this example, the link in the string will have to be adjusted manually to your request. The dates at the end of the http address below, allow you to download for a specific year, month and/or day. If you wish to download all ProbaV data for a specific year (e.g. 2016), then change the dates to '2016/?/?mode=tif'. The data will be downloaded into the directory set in the previous code (dirloc). For more examples on how to download ProbaV data on different operating systems, please follow this <a href="http://www.vito-eodata.be/PDF/image/Data_pool_manual.pdf">link</a>.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">wget_string <- paste('wget -A ', tile_str ,' .tif' , ' -P ', dirloc, ' --no-directories -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_100m/S5_TOC_100_m/2016/2/1/?mode=tif', sep="")
+<pre style=""><code class="source r">wget_string <- paste('wget -A ', tile_str ,' .tif' , ' -P ', dirloc, ' --no-directories -r --user=', u_name,' --password=', p_word, ' http://www.vito-eodata.be/PDF/datapool/Free_Data/ProbaV_100m/S5_TOC_100_m/2016/2/1/?mode=tif', sep="")
 
 # check for output of the download string
 print(wget_string)</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
-<pre style=""><code class="output r">## [1] "wget -A '*X19Y06*' .tif -P /home/JD/R_Projects/JornDallinga.github.io/2015/ --no-directories -r --user= --password= http://www.vito-eodata.be/PDF/datapool/Free_Data/PROBA-V_100m/S5_TOC_100_m/2016/2/1/?mode=tif"
+<pre style=""><code class="output r">## [1] "wget -A '*X19Y06*' .tif -P /home/JD/R_Projects/JornDallinga.github.io/2015/ --no-directories -r --user= --password= http://www.vito-eodata.be/PDF/datapool/Free_Data/ProbaV_100m/S5_TOC_100_m/2016/2/1/?mode=tif"
 </code></pre>
 </div>
 <div class="row">
@@ -992,8 +992,8 @@ system(wget_string)</code></pre>
 </div>
 <h2 id="preprocessing">Preprocessing</h2>
 <p>Lets start with the preprocessing of the data. Remember, the following parts of the script only work by following the ProbaV directory structure on the cloud toolbox. Provided by Vito or you can download manually, but the files should be stored in the folder structure used by vito (One folder per date, in YYYYMMDD format, contains files for all tiles).</p>
-<p>The PROBA-V has 3 synthesis products, S1 (daily observations), S5 (mosaiced 5 day observation) and S10 (mosaiced 10 day observation). In the case of a 10-day synthesis product, the product has a minimum effect of cloud cover, resulting from selection of cloud-free acquisitions during the 10-day period. Additionally, their are two products amongst these daily products available, the Top of Atmosphere (TOA) and Top of Canopy (TOC). The TOC is atmospheric corrected product, and in combination with the S5 synthesis, is the data we are going to use in this tutorial.</p>
-<p>Below the data location of my PROABA_V data (l0_dir), and where I intend to store my new datasets (outdir)</p>
+<p>The ProbaV has 3 synthesis products, S1 (daily observations), S5 (mosaic-ed 5 day observation) and S10 (mosaic-ed 10 day observation). In the case of a 10-day synthesis product, the product has a minimum effect of cloud cover, resulting from selection of cloud-free acquisitions during the 10-day period. Additionally, their are two products among these daily products available, the Top of Atmosphere (TOA) and Top of Canopy (TOC). The TOC is atmospheric corrected product, and in combination with the S5 synthesis, is the data we are going to use in this tutorial.</p>
+<p>Below the data location of my ProbaV data (l0_dir), and where I intend to store my new data sets (outdir)</p>
 <div class="row">
 
 </div>
@@ -1009,17 +1009,17 @@ system(wget_string)</code></pre>
 # set data path to which you would write large files
 outdir <- outdir # Character</code></pre>
 </div>
-<p>The files should be stored in the folder structure used by vito, using YYYYMMDD notation for the folders that contain the .tif files. Where one folder per date (YYYYMMDD) contains files for all tiles. Through which folders you wish to loop the product information function, is up to you. For this tutorial, we select a preset of folders based on subfolder directory lenght. In this scenario, I know that the YYYYMMDD folder notations contain the correct .tif files. Since there are several folders that still contain unprocessed PROBAV data in my 'l0_dir' path, I want to exclude them.</p>
-<p>NOTE: If you wish to simply use one folder name as directory(l0_dir), note that all the .tif files in the subfolders will be selected in the looping process, including folders that might contain incorrect/unprocessed .tif files.</p>
+<p>The files should be stored in the folder structure used by vito, using YYYYMMDD notation for the folders that contain the .tif files. Where one folder per date (YYYYMMDD) contains files for all tiles. Through which folders you wish to loop the product information function, is up to you. For this tutorial, we select a preset of folders based on subfolder directory length. In this scenario, I know that the YYYYMMDD folder notations contain the correct .tif files. Since there are several folders that still contain unprocessed ProbaV data in my 'l0_dir' path, I want to exclude them.</p>
+<p>NOTE: If you wish to simply use one folder name as directory(l0_dir), note that all the .tif files in the sub-folders will be selected in the looping process, including folders that might contain incorrect/unprocessed .tif files.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r"># list files in the main directory that stores the YYYYMMDD folders containing the PROBAV data
+<pre style=""><code class="source r"># list files in the main directory that stores the YYYYMMDD folders containing the ProbaV data
 lf <- list.files(l0_dir)
 # Simple selection of folders based on name length == YYYYMMDD
 lf <- lf[nchar(lf) == 8]
-# Create coerced subfolder variable which contain all the PROBAV .tif files that you wish to process.
+# Create coerced subfolder variable which contain all the ProbaV .tif files that you wish to process.
 dir_file <- paste0(l0_dir,'/',lf)</code></pre>
 </div>
 <p>The dir_file variable now contains all the folders in which we would look for the ProbaV .tif files. The structure of this variable is shown below:</p>
@@ -1048,6 +1048,15 @@ dir_file <- paste0(l0_dir,'/',lf)</code></pre>
 ## [6] "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M/20140721"
 </code></pre>
 </div>
+<p>Throughout this tutorial, we will work with the tile 'X17Y06', which is located in Africa.</p>
+<p>Lets map the extent of the tile:</p>
+<div class="row">
+<div class="row">
+<div class="col-md-offset-3 col-md-6">
+<a href="#" class="thumbnail"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAIAAAD2HxkiAAAACXBIWXMAAAk6AAAJOgHwZJJKAAAgAElEQVR4nOy9eZQkV33veW/sGZkRkUtELlXVtVd1a2ExCDAgNjMjGQzPYLQihARCQhLijJ+ZmfOGc+Y8znlnzhxvb3j4gZAEiMUCtBkjG2MMGMnsBrNLra6uqq6qriUzMiO3yIiMjO3OH9HKzs7Kyr2qOrvic/qPrsjYcvnGvfe3QoQQ8PHxOTyww74BH5+jji9CH59Dxhehj88h44vQx+eQ8UXo43PI+CL08TlkfBH6+Bwyvgh9fA4ZX4Q+PoeML0Ifn0PGF6GPzyHji9DH55DxRejjc8j4IvTxOWR8Efr4HDK+CH18DhlfhD4+h4wvQh+fQ8YXoY/PIeOLcIR56UtfCiH8i7/4i8aNf/7nfx4Kha6++urd+0MIT5w4cVB359Mt0C/0NKKcOnXKU9QrXvGKf//3f69v53keQviNb3xjtw4/9rGPiaJ43333HeiN+nTCHwlHlcceewwAcOLEiZ/97Gdra2vexuXlZVVVo9Ho+Pj47kMYhqEo6iBv0qcrkM9ocsUVV4ii+MgjjwAA/uqv/srbWNfeS17yEoQQAOD48eN/+Zd/+YY3vKH+p2VZH/vYx2ZmZgKBwGte85pf/vKXCKGlpaVrr702HA7TNH3FFVc88cQTh/fOjhy+CEeS3/3udwCA2267rVAo4Dj+qle9qv6Sp7T6/wOBQCqVuu+++1CDJgEAb3/72z/+8Y8nk8mFhQXXda+99loAwF133fWJT3yCpulIJHI4b+xIQhzK8OszIN5c9O1vf3s4HH7d61739NNPb2xsTE5O7t4TIXTy5ElBEOpbnnrqKQDAxz/+8dnZ2WuuuWZ9fd1xnEcfffRHP/rRT3/60+9973u1Wq1Wqx3Ye/Hx14SjB0Lo0UcfBQBcd911EMKnn34aAPDkk0+23HlqaqpRgQAAx3EAAK7rNm780z/907e+9a2O43zkIx8RRXGf7tynJb4IR4/f/OY3p06duu22206ePHny5Mlf//rXNE0/8cQTXR7+tre9DQDw4Q9/+BOf+MSb3vSmj3zkIziOP//88wAACOEXvvCFXC63j3fvs5vDng/79MxHP/pRAMC3v/3t+pY/+qM/AgCcPXsW7VoT1v9f/9M0zY9+9KOTk5OBQOD1r3/9s88+ixB65plnTpw4EQ6HP/zhD7/2ta8FADz99NMH+7aOLr6f0MfnkPGnoz4+h4wvQh+fQ8YXoY/PIeOL0MfnkPFF6ONzyPgi9PE5ZHwR+vgcMr4IfXwOGV+EPj6HjC9CH59Dxhehj88h44vQx+eQ8UXo43PI+CL08TlkfBH6+Bwyvgh9fA4ZX4Q+PoeML0Ifn0PGF6GPzyHj1x3tikKhEPlEtP7n5sR1E5vdVjero0RfFfvwT3o+SlGYh1/B6hs6Ownv/R3LsnvtWSqVzC+9TVCfo8x843aLFPJ3nIpGoyRJAgCK/+P3wsVfAQBcgD132f8t5X8cy/6AcHVvZxsP5sTXEtc9wjCM67qmaZbL5WNf+T3MNXPia8W7voXjuHdXsf85UGVEBKCLUbjbocCpxk4hiIe0VQCATYTOTN66sHp/yz0roQV49y9ZloUQNm63bTv98PX0Ox4EACCEhM+9iK7JPd2qwaRMUuDV55tf+K/Dqc/ki7ArLMuq/x9BwmBSvZ5Bib2aed+3+7h0MBi0IAmRE9TOyJVKGxEKggDu+346nZY+M4s7VQAAAthO8i2UXcIfe2cZAuq2b3EcV7vpn9GnxyBwFfG14+l/iBR+4R2eTlwTMHaE0m8JS2UYJhQKedtJksxHX+m+44vY39+qfPrNEDkYcGgj08d7aQQC1FGBAIAqO4k7OtAAAABzalxluRB5Wf2eGwlVTm89cvMGf/n8u/6b97jxKJfLqfQ/45+K932rjLGzOXFdCxEOCX862hXY4++q/19jp6Tsv/V0eCU4y7zv28FgsI9LkyRpkfy528A6f1+JRKJ4z9ki/yIAgCy9MfGBr4sf+n74nn8z6IRX9lcUxZ07z1ZC89XAeOOvGXdrmGvK0hvRTV/39vQQBCF469fwr707IX83nntGUn4QU37sDU0HgJj7voMxS3MfLnMnAEC4U93rR6sHjgVv+OKJG//fRgUCAAiCUD64XuYG6gknZZ/OxN/s4Hs+AQfBF2FndnZ2vPkbAKBGiStz93Dl53o6gx6c7k+BAAAMw1xIdt7vBSCEsVjMes93HYwWys/mHry2Wq0SBDF+59fC4TAAAMfxRCIhi2+YPPvVxgM5dcm87Yfxe78nSVJj0W7DMLS//ZN49un+7n9wIsVfCOpzK3MfOrXwZw4RtHF2ZfZuAICD0VnpDenENQ7GAAA0dkoQhKa5KACA53mCIFh9Y5B7EEq/leRn1qduyYdfPsh5WuKLsAOO49CP/zFhV7w/aTOXzHwLQ1b7o5roSUVNQAhrTFyO/0HuQ9lAINDlUaIo5qTXM7UMX36ucS7tgeO4+M7/rnLHGzcyxo7+9/fu3plhGOL6r1RCC32/hQGBrqUFJl/ym/8dYnhIPQ2BK5R/VxRevDbz/pjyYxcP1GjRIjj3+id2K9CDYZh89FWV4Nwgt4EBe3b1IdoupRPX2nifj9Q9zuzTFtd1IXIat0DX7vUklFXQNK3vexj7wNdid/2LKIrdD6eWZRFWORu7unrn7ziO270Dz/PW7T/SAxONG1l9vVqt7t6ZoqimD+EgwZCNcBpza4vP/3lOujodvzYbez0EaG7lfsw11dA8aVeUO5YSicReZ2BZNn7vv1Z7X8nvJlhZTma+vTlxfT5y1eBn8/ANMx0gSRK89zvyV87Px7Kx14jKDzHX7PIMRf5F1Pu+2/d0FAAAIfRski1RVZUgCJIkEUJeQyXXdQ3DkPR144MnvSloS6LRaPq9P2MfOP/TjOV/qj34e/J7fxyPX2DGUL9yy9hBLQJbwlWWAAAYcKfXv9j00vGlv16ZuQtr9ezoiIOzBh1njDTuGr0c506vf76Py+2FXwa/K7LZrPSpBAAIACBLbwoX/oOyy10eK9+TafpNDxFN0+yHXk3YmknwGHDoWo6q5YrCi91b/tlbHLY/vFKp4J88HjC2z92q9EaIHINJHrvjsaaraF94u5R9GoLD+bWcWvjI8dN/3WaHEn8lc+/PaZpus0/2k6+Xct8HAGjB2e3kWzDHxFGNKz9XCS1aVDSe/Ve+x6X+sFwUvgi7IpfLxT4ZhwCVuctMOibmftDxEASwbPyN8Lqv8jzf/sfRDQihUqkEAAiFQgRxfv5Sq9VKpRJ87F2R0q8JW/U29iR7+VNv8gZ5g04osd8Xbv5bkiR337Bt28VPv0FUfjTgG+mSKp3YSb4V4ARpqXz5WaqWUyKvnNj5eptDsuLrwA1Peo+elotD+f43M9UdI5By8EBq5xtNr5aEF+XEq/nibzHgxJSfgG4eN74ID5Lt7W3yazfhtm4ExuDbHyCevCGor7HVzb2PgDuJa+N3/mObaaSHbduO4ziOgxBiWVbTNF3XAXgcAAAAhmHXu65rWRZF/X04XIIQZbPvpyjKtu3GJRBCqFAoOI4DHrsuUviPfPQV8Xu/1+Vby+VykU9P4Y5e5k5Q9/6SYZi99szn89z9M2TXU4CWuBiFuaaNsdnEmyLKTxhTAQAYlJQee1uwsowABpGDMDKduObK5/4r5poOxmjBmSqTsqhIMvOtuoVsLxyczYqvC97yeCAQqD+tqtWqruvlp/5MzP/Em9m2wWBShcjLJPlpwmm3jC+Efy/yv7VwV/aBL8KucF0XwzDbtjEM85x1mUwm8emk92pJeJF5y3cbP0mEUCwWaxyyvJOUSiXbtgF4DEKEEIAQ4TgiCAvHXQCAprHBoMay1YZD4ObmeCqVJslz1qBiMew4kCRv53l+930ihPL5PI7jbZaCuw/J5XLw0XcEtTOFW38+NjbWZudMJgMhxDDMfeyGWP4nXkiAfE8GAIDjuPvVd4rKjxpNOPnwy62bvoFhGHj0T6rsxOTZr67OfIBTlzDXDFWWteCMjbMAAMKuhEu/8WzO1cB4UXixJH+PuHCd5kLyzOwH5lZah8s0YTBJg0naRAgAAJDLGBlW3+jepu0CbHX+Q+HiLxHAROWHLY1SK7N3z93a1c10xBdhn5immf/c22P5n+ajrxRuf6rNAALqP3T4aDhcJIjezIyrq7OzsxcYRbLZeyVJ2r2n67q1Wq17N0YjjuPouk6SZPs3UgchpCgKevRPwA1PchznHeU4Ti6Xw564HiAEAEAYwb3vn7z7sW1befBah+T40m/bO/qfP/5/njj1Fy1fUiKvDFTPssZOz2+vX2TxjVzlVODCK9YosSi8mLIK/kh4+OTz+XK5zDBMIpFouQjx5pYQPooQjEbz3nDXK1tbKUnKUdT5p3g+H2GYD7SMX9va2kqlUt0E1uyFYRgAgC6l2BFd1ymK8mYEm5ubka+8LqivtT9kZfrOubWHWr6EAMzFXquGFmfXPzeU2+uIxk5XA+Oi8kPvz2L4pUr4FWxtO7XzTQBcP3b0kLFtG6EvT08rrovJsojj1wMAEEIQQu8XrGlaMPglSerfPehBkpbj4ACcF6EglMvlWksRjo+PD3g5RVHsb/0flFUkLBVAaL3zqxRFcRzXvW3JMAxZlhmGKX77/+Hf/H8lk+cm7dRTt3ZUIAKtve0eECBJ+QGEAAAMgH6eaL1SCL8Uc+3Tc/eGy89C5Gjs1F4PiEHwRdgniqLE4woAAMPcREIG4JP1lwyDqVSCJAlCoUEVCABQVS4ez124JdgmjHtAxsfHrVu/oGma9vj7KFPBn7rd+uMvNC1u27C5uYl980MQo9ORq0icrSsQdBfkoPKXxfPtLM8mGZFjV0dzP8EORIS1QKpxFSqCzlbxPvCno/2gqiqGPRAMttOYLEvxeHbACxUKguvisdj51KRikXfd26LRaJujDhHHcfL5PEKI47jG1anruunPvANzzWTmW3sdiwBMJ/8wlf5mm/PL4hviuWeGecd74wJMEV/ruRZbM6TpqB+21jOaphnGF9srEAAA4aCPasNgLItqVCAAwDRvuWgVCADAcVySpHg83mQfymazCfk7Dh5oGXXpQiIXffXy7D2RFwLl90LlLxvm7bZle+yPhdJvD+BC/nS0B3RdV1U1GPxbSergrQIAkKSj6yzL6n1fDsNsgmi2qrPsl7JZhqZvbemiuDgxDCPw5T/Ixq5OyN9pcr45eCAfuarMXXbs7FfF/I87niqor7kAO5i5qBactYq/oKzifl/IHwm7olarZTL3u+79icSnQ6HOCgQACEIpnR4oWo2i7Go14LoXfEehUEWScqb5JUVRRmUpIcuySUWrgfFGV7tNhFZm73n28o/F8j+bO/Ngl2GAUvbfVubu3rc7vYB47nsm1SHubyj4I2FnLMsqFj+XSPRWEwFCFAxqpklRVLeh3rtJJDLLy7OTk2cZ5oIkdFHMLS9/E6ECQhiEN3pqZFm2pzBx13WLxaKXv0sQRCAQGJZnopFarYZ9608xx2DMcytkF2AbU+8NaqszZz6jiK/Begmexh19fPup5fkPc+WTCfk7Q7/bRrKxqxeXP7Gvl/DwDTOdyWTu71WBHqUSV6vRTbbNPtjaSiWTmUY3o+vC5eW5xcXlxt10PaBpIYSuC4VCHc2nqqrq+pdEUfFOa9u4rrO12q0twwAGIZvNuk+8WwtM8urJQvilAAChciqq/NSbl5aEFxFONVhZ7nSaZqqBiaLw4lj+p5SpDPeG6+TEq1n9LKuv77mHHzt6MLium89/ShS7/aYdB8vlxEqFhRALBiv9qXfXPWDPP794+eXnapwYBrOxMTk7u0oQrY3+uVxMED7YVOWhEV3XTfPBcLjUtN0wGE1jHedGLzYtGo3ulSbbPdsPvJ2y8mXhitnVhwAACGAQuAAAFxIqd8JgEoXIVbHcDyEEfOlZyip0f2YE4NL8nx5f/v8GvMM2ZMXXHYB11J+OdqBQKEQiXS3NEQInT55gGHN6enXv/NJ+wDA3EsnXajRF1RQlpmnBxcV2UcixmJLNFtokUlQqlXi8WYEAAIYxGMYA4H4AgG3jq6s3h8NhL2iWIAhBEHbH4hSLRcuyIIQEQfA837TD9vY27lTL/BUIndtuE8FC5CqVOw6dWiL3TEL+bkL+LgDABdjm+J8wVp4rnwx0F5gGAZJy/2YwScZId7N/H1ikUAktBLXVfc1p9kXYAcf5Ko539QXYNsHzpYmJfYlsTCRy+XyEomgI3ampDuVSIAQc9/lslgXgRgzDeJ5vGhUDgYBhMAzTbjG2tTU+MfEYTZ9b0No2USjwrosBcIOXnFUqlarVL0ejBS+kzrKIdFqEEJHkdSzLkiRZrVZLz3xiSn3eJkP1xCDC1hycObbx5SZLDAbcya0nAAA7iT8s81dECj/vxixpkxxR6cpO1h9jO/9YEl4ki29IZP91/67ii7ADEHaecjgOViyGFSUyPr5fscUY5iIESdI0jFA3+wcC1UCgCsCnXBeWy4JlEQDcEI1GvdQqXdcjkQ5PFschSPK8g4Qg7Bc8lp8ql7lSiRYEVRDOm4tI0o5EigxjAPBJXWc1jWSYGvXKK9ml7Zp+tj64QeAm09/aSb5FzP+4qT6qRyrzzwCAM1O3RQq/CJc7uOm4yumV6Tv3dUYqlH5rxN+8f+cHvgi74EYAPtXmZU0Lbm8nZmY2mrzqQ0dRYqVSeHa2NxsGhqFwuAgAcN378/mI6+IIwWi00CiwljgOxLDWDyCeV3le3b09EDg3tAaD57yj8XimxF1mEyGmYYYJgUtZxSL/4nju6b2uPrP+BSVyVTr+v8Zzz7SpJBKobgnl39kEr4bmQpVl0m5xVwNyeu7D0xvNNTWGiy/CDiDkRWW3+DkaBq2qnK4HFxYOov6KKGYDgVrfCRIYhkSxh8eEIPSTvGsYNEWZdfVyXEWmpQq3KOW8Sq0wF3s1AhjCybjcIe04Vvi5jTHLs/dObH+tpYny1MJ/jhV+Vg2MbyffIt78OdUwHMep1Wrjn52CQ/Lm/+6yjy0u/w/SarF+HiK+CNuhqipNf7lRgZZFFgqCqnIAgFBITyQyAAzqgegSUczLstgxXG5YqConSdlejaOqyrsubLQJ59/8Qek7f+P9PxN/M1c+yRpbXZ6NcI3F5Y9vJf5IYyel3A8aS06sztw5u/Y50iq5kPDKCHheGcdx8tFXxPI/7e2+9yBQ21meu1fKfR9zjJC2agRSJhkh7bKNB3FbiwzlGr4I25DP53H8i4Jw7ilYrTKqyhkGPTm5Objrrz9UNXRgl45GC5oW7DURJBbLnTp1XJKy9cGQJF+p06nizF0Io8Z2/qF7BdYZz3xDZ1LL8/dhdpUvP+tilIszuKMXhRdHir+EyPXmKt7OOI6jm//Ruf9YjwXUWjO3+sDK3D3Rws8dSCjia4Xyc0LptwaTQADr0oTbDb4IW2Dbdjb7WVFU6gsnyyI3N8cOZtrZlkG9dt2DYU4fl8MwFA4XFCUqSQoAoFIJMgwzvv13A94Ma+zML//N7qulk9fQ1XQmk2nMmYrFYrJ49bDiaWZWHsik3hLJ/7ye3sEM3IejCT929AJM0yyVSoryYCqVbjRdIARDof5DsYcFzw9UZOlgkCSlWAzregAAoOss+fe3uHCfnvVuuPgrAJD71F2NWyGEoff+fZkbTr4FBtzUzjcK0avSiWuGcsLd+CPhOdLptKp+m6ZrDFOjKKtQEAAABGGTpAMAsCzSPYjA/Q4MHr9yABCEHY0WVJWrVgMkeTO85d1pXU98dm4o88MmGCPNGOlATS6Xy41pJcFgULnt+7kvv11QnxuKWSW1843V2TsHP09L/JEQAAAMw8Cwv0sm5UikFAgYBOF4/wCAlkVYFmGahK7vVzJ794xKiGEslofwXcHgnZFIJBwOp1KpbPyN+3c5xthxP3t1LnfBajkWi8Xu+6F271o6ca3XMWZAMKemBWcHP89u/NhRALoI0TYMJp1O1Grk3NzaXhGb+41pUpVKMBrtIbpyEEolHsfdLvO2dpPPRznu7nqkTq1Wqzzw+ljh34d3g81UgnPG7T8RxebWpQghWZa5L7yCrZ6tb1RDCwadABBzMVLK/QDrolMiAGAn8YchbfV85VI/gHsoIIQymUw0+nD7hCPDYMrlkCQpuZxoWfjY2H4FK7Ynm5UkadCSGV0yoAjBrtKMpVKJeuDKQLuKyYNiE6Fc7DXJu1tU0CiXy7VaDTx2HQSue/2T9UQT13ULn3xtLN+hg7KLMWfH3mFSkYntr9e7BvjlLYaAZVnp9AOS9FCXKX8QIknKCkL5+ecXDIPa79trYmlpLhI5oGFwKGDYV2z7/KxBEITyhc3Yhg5hV3CnuvPAW03T1PULDGk8z0uSJH3omeg9z8TjcZZlK5XKyhfvwjDMubFddX0AwMb4dfnoVePpf1xYvf+8Aod420M/4wiRz+dTqQvMzQjBX/3qRaJYsCzccTAAAEU5CEHTpMbHzz3Cg0H9+PHTuZwoy/TkZM9er75hGMOyiMOaDPdBLFZIp3ONzgPutqfyn3ljtPCzfbwqxDDXzD/8x4RVJj/49O58Li/Po1qtlr7yHvjm/w4AoCgqG7sadw3GyASqW7ujbQI1uZvuI/3f8lGejuZynxTFC1bzCIG1temZmbVuDq/VqPX1qfHxrXqo5H5z6tT88eM957/2x+DTUQBAtcqY5t2NfX9VVcU+/aJgm0zZwTDohHLrf0S+/FqAHPSh51uWGtA0zfjcm2P5n+Y+lK2vIR3HMQyjWq0ihOCj7wQQkmaR1dcNOuFiFKctm1TUIs4ZYB2cga4t/NmzQ7nnozsSWpaF482jCoTdWiCzWREhEA4XdnZSEDpzc2tDv8PdMIzlOHiXqVUXA4GAoaqPOM4H641xOI6TgzP7J0KmlsGeer+NBywyHG5VraNYLMLPvz5W+m0++kr3sRvAvedylHAcDwaD50R73w8AAJZlaZpWqVRomi5gGE3TBI5jGOa9l0HKnDdxREXoOI4sy2NjLTPWuvpwy+WQJ7x4PGeaZCYTZxijv6Dn7jl2bH1nJ0WSFsPUWuYxXIRIUjadllOp861I0bu+ij49NqwY690k5O+uzt4FAIjtaolVKBTIz17lNcMoCC8Z3/mHUqnUOFA3QpJkOBzuvrVO3xxFw4zrurL80NjYZwZxfQvC+XkaRVmJhIwQdvr03L769DEMxOPZeDznOEQ6nUBoBHz3EAJJ+pwsn/cAiaKYvWenEH7ZPl0RA8786v3R0i+fe+65bDab+5vXyLKcy+VkWaZeUKAemKjREmOk3YffWCzue1HD9hzFNWE6nU4kHtwrW3d3F6SW5HJi03oSAGDbeD4fJQgnGt3f3EIAgGkSxWI0Hh9CDZuWDGVNWCed/mCjhQYAYBiG+tlrX0hx2g+wrHj1Xuc/PXfvwsq5NFGDjle4RYQAuPHvwuFwm9o8+8SRGwl1XQ+FHtmtwGo1kM3GVlZmuo7PRLsHPYJw4vEsQVhLSwuecXX/SKeTCKFsVlpZmdvcnLDt85fTdXZpaf706blcrtlzfVjs7mbBMAx96z9UmVTL/YeBW+KvaPmCwSQDtfMPL6Ymi7kfSMoPpE8llM/9J/fAAxSP3EiYzWYlqUWmfK+tI8plDkKX41pn+rgupihRhLD9GKlkOY4QiESKdfemZZH5fBjHEc+XT5+eS6XSXmCNpgU1LYgQ6KPo23BHwkIhgmG37V59Ze7/X7xCT/uBFppPS38gqM8BAHCnymrrtJkDAGRjV0tKa5eDC0n5ro2mQXu/OXIiTKfTyeQDu7evrEz3ZOGs1ah8PtLkZmxC04Lr6xPz82cGqf/bSLnMZTLxsbGdlk6RQkFwHMJ1saaniRfuU6vRx4714NUcrggBALoeKJff29TLMZvNSp9KdNUgfjBMKqqEr6qGpgAAVSoxufkoVzndck+LDGekN03cOWj6VfccLRFmMhlBeLipmrVHNhvzUuC6BCFw5sz07Oxap92gokRqNXrAGlCmSayvT4mi0rH+YqkkkKS1uweGYdDlMu8lJXdzRVXlSiWeoroKquwSxyFU9U2Li4v1LblcTvzkkMsNd8PS4n9eXNqrPBTM3L2TGG7VyrYcIRdFrVZj2UdaKrAPXmhV2XE3JIr5apU5dWpxcnKjXgqpJ1ZXp3henZ9f6cacy7JaJpPYLUKGqTFM1jRJWY5Xq8yxYxvtHV0kaVKUNfREfor6luPM1d2GOI47OIs7B52ridl7fhFK7PdjsYNoQVHnCImwWq2ePXtsr2KbCBE9jYQAAIS6XcEHAsbx40u5XEyWpamps50PeIFSiatW2cnJre6j1UjSLpe5vXpgUJQVj8u2TeRykq4HJyc3MOxA7RDhcLFYLNZ/5aFQqMRfsb+BbLuwiVCk1LoHWz78cvK9/9x9U9ShcIRESNO0KOaTyUw3pUS7AcLe7J+iqHBc5dSp4xMTZ7uJdFtbmxKEYjLZczGFyy47tbIyNz+/Z4AbQdjxeNZx8ooSVVV+cnKdIA4oCscreFH/kyRJ993/ZD642FMB/AE5m3rnse0nd2+vUSJ223cOvufcEXJRBAKBROLObHZoVnuO6zllm6Zrx4+fUtUOBXw1LZROJ8bHtyORfrLCIUSxmJLPd+gliuOOJOWmp9cKhfDp03O12kHkhWAYwi8MZBFFUYm9Wg8cO4Cre7hUiLhwAuxg9M5d26U7nj2A+JjdHCERAgAwDIPw+sO+CxCJFGVZ2tycaOmRWl+frNXIZDLTsT5vG2wb92r+dgTDXElS5udXKxXu9Ok5w2B2dpKyLBaL4fZ18vsjEKhWq9WmjakPfsO++3f58MuHfrkm1OD8ysxdYrbZg1+IvDyRSLTp3rGvHKHp6NCBELku6COOl6bNeDxrWeTS0uKJE+fStA2DSaeTgYCWSqUHd2moKi9JPdhUvMEzGlUKhaiqcouLrc33g0MQTmOSYR2e57UPPMX5i7IAACAASURBVFN86DXh0m+GflE1OC/H/4CvnKJqyuyZh+AujwgC2BADsnvFF2H/UJSpaSGO69OTRpIWANjq6ixCLsPUWNaYnFzfq/L8wQAhiEbzxeJ+T8keA+BDu7cGg0H53d8G9w/HN2BSsYLwEpU7IajPUrVcS+152ARnkUJj8dID5siJkCRJyyJIcgipsQxjKkqsbxECAE6cONdyMJcTh5g1b1kERTVP+S4eaNrQdb1lG1OWZXV2ql1fzj1QQ4uy+Abv/7x6EgBAuNWgdgZzzb2CYwAACOJZ6Q3EjY+HGeYQK9kdORHSNF2r0UMRIUma1So9+HmGTqUS6r6r6cHD85VC4SFdv2V3UaZQKJS+9SfsA2Pdx9CowflM6i2i/PTc2kO7X80krxXzP4Go9dethhaF9/8TTR/yl3i0DDPDpfsM4APGcQiGGU6g3D4RiRQd59EzZ87sfikWi8nSG7s8j4tRWmh2fvlv9mqidmzz8XzkqqaNCEAl+qp89JXVW7536AoER3AkNAyD44Zv9PPpHlXlstkoz2vh8FOmeQ9FXeAaIUlSuOObmc++NZH9V52dWp26LVQ9C5Bj4UEAIa+eCmln6Oo2wijSLq/MfGD2zOfaXIsylXzkxlj+p41DqxL9/fA9/3bAHvk2XCz30SWmaS4v/92JEzfUbVm9rqdN0xyiY3pU0tsvHjY2xnm+MjOz4YVMZDKF3VGaNE2TNz1uPrCwlXzrlSf/mwsJDJ3z1hh0vEZLRvilJh3DrUoq8y8dC3uP7/xDIfKySOE/qoGJSmgOAOC+69GLR4Fg5ERIUdSxY3/kuu7m5mYymaQoSpbl7mNtEUIY9qRXrXBra9x1MVHM9ecQHyLr61PJ5NAKmSIEbfvi/VoDgVo4fP4Dx/HHEfrQ7sdoNBrNvP858+n/CQCqKxAAwNRkptZbWhaCZDZ2tX3zN2malg48GqYbLt5vay84jgMAHDt2zPvmAoFAUx+CNkAIM5m4V99pdnYNQlQq8adPz0UihZ4aaNYhSbtQEAaRcT4fi0TyND2csPJajT5zZnp2dmUoZzsABKFUKpVaxqnYtr24srsTU2/koq9m7/jOYitL7MXDqBpm6s9Omqa7X1trmjYzsxaNFqLRgjcdEoTywsIKSdqZTD/REq6LsexAzoBCgRvWnLZU4tLpxIkTpyiqT9tvuRzSddZ198tYn8s1NzklSdswvtrSfU9RFGEPms2Ibvp6S1/IRcXojYR1qtUqQRC2bbesLbkbhJCqfimZbJELLwhl2yZUlee4sq6zlQpLUVYopBWLvGWRlcoF5ycIq76gQAj01BzCtrGNjen6/fB8eYi9JXI5aW6u/w6KpZJQq5EE4bbPVB6EUonbXZgnkcjI8kMcd1uTWmzbhqjv1TssCC+x3v2tUHe/jcNlJEVoWZaiKDRNVypPiOJ7ujnEcZxMJtMmOy4Wy8tyHMMcXWfj8aymsTs7qR//+NuPPPIrmm6unNcltRrtBQYUCvZ/+S+3nTghsaw2PX1mP8JiNC0YDvevZ4SgLIsLC/s7j62P+ZZFaBobDpcBABCCREIulR7IZt/T2LsCQuhgTE8N1WycLfFXujgNbnhSEIQmu+tFy6hm1juOg++qKtmGfD4PwCMdi6Cl0wmKsuq7/fVf/+iaa+Ze9KKeA6k0jVVVjufL3mT1wQf/49ixhbe8ZR+tAgP2ilGUaDBY2W/v4s5OQpJyBOFksxLL6qoaxDAEAMQwB8NcjlNzuZgo3uHVO0MIKZ+8WlR+1N25YVZ6PX7T34XD4UOMAu2PkRwJAQA9KRAAEI1GVfV2Xf/07pTzRoZSrTCXEx0H250HaNsYQexXBi1FmTs7yVSqTyur4+AI7ftvFyF8eztl2xRNVyVJa1wfGgaztjYZj+cU5bOx2B0kSUIIXdih+iACmM4eAxArcyekO566qBwP3TOSN90fHMedPRtVlJjrgmo1GIsphYKAYYCiqvW+LhRVK5U4QejfUnLmzDFJKuyuj8Rx5eXlq+o5E40YBrW5OellHiEENY2dmOghlR4AkMvFolFFUfovypDPR3oqNtcfFGWOjbVeETCMsbCwurWVCoU0RfmsJN2J4zh+05PO/cdwp7XpS2On1Vt/7BnGk4HASLQxbskREiEAwHHeHIs9CSHQNMN1YThcghA1xn/yvPrcc8cDgZ7ro21tJQgCQYjicaVl1jyGobm51bW1yenpjV3HTjRmwUejWC4nEYTpTdtIsnbs2KY3w9J1dns7hWEOx1XKZY4kLVHMbWxMTkxsnTkzzfPlpaX5iYmtPgy2B9B0bWsrIYodUhzHx3dyuShN12T5M4nEnXBXZGAh/HvOLf/iraFYlk2Ogt2lI0dLhDiOWxYJAJZI7PnUv+yyU6urvZU/BABQlN2xRA1J2prGbm6m4nGlLnLXBU15GDjuJhIZVQ0hhM3Pr1gWkcuJ5bKAYUgQSvPz52wnkpSzLEJVeW90tSwSwxzHISiq51TgUonfj/zdJnQ9RNOd7a6imF9fn4zHs7L8YCBwc1F4cazw7w5GW1SkeNsveZ6/+F0OvXK0REgQRKEQ4fmyLEs4brsuhhB0HLJc5jDMjkaLrosBAGz7gqVIoRARhFKbgkilEtdlKNwVVzxvWaSqhjQtcezYWQDAxsa0958m6sokSTsez7W065KkXV/BRiLFZ5+9LB7Prq9Pzc31ZuTEMLdU4jlO27+iT5ub492vV6emNn7zmyuSyUy5/Hjg3d/IAQAhpChKYtlebQEjwdESYTQaJYhyU8p5NistLCxjmGvbOACIIFzbxjOZuGFQlUown49NT9vLy/OLiy2WcwAAVQ3Wakz3CyqStDhOXV2doemaqoYgRMNqdXbFFSdPnZr37P49wXEVgrBzueiABQ5dFztzZqZaZQShdOzY+eqm6+uTkpTtfpK8tZWanz/DsnqpxOE4Ewp1KMnTRKVSqVQqB1xFexCOlghpmqao9+TznxeEMo67us5qGuu6wBsB6qOZ5602TZKirGhU4TgCx52NjfGWfXk1LZhM9hDNuLk5VqlwL3vZrzDMjUbzuVyHckw9ASEiCNt1sV7HNIKwVVUYUIQY5joOfuWVzzb2wNB1JhSqdK9A1wUEYbOsXirxqnr9xES3CjRNs1wuI4QCgS8SBIXQfaNiqjlaIgQACIJgmvcoShGhJy2LSibTe9khKcqqr9xYVifJFl4+06Q6TkQ1ja1WA46DAwBkWeS4ysTEub7nBGHj+NBmgKur08eObWtaAPTe+g/HXccBhsEMuDjE8eYV6dbW2MJCD3E8GAZcF6/VKIoyy+UfyPIf7FV/yVOd67oAPA4homkrFit7uqtWY6OiQHAERQgAoCgqHo8XizeT5Je69wQYBmMYVJM7++zZ8dnZCzJT19cnAwGdIFzbxnAcIeQNMqFKJXj27DhJ2k2NREnS1LRgU0RlH6yuTo+Pb9O0WatR1WpvJ9zcTNG0PT6ezmZjPfWraELTWK9DDkLnnKI7O6lYrGe7K02bpVI4nU5cfvlJw9gql+/0/BCO45TLZcdxEEIAPE6SZixWaqm1EVIgOJoi9AiHw9nsTQC06NDUkkQic/bs+Ph4hmX1TCYBgGtZZLUaLJf5Rl05DrF7UheN5h0nwvOqZTV/4JZF8/ygpShsmxCEMk2bAIBwuNRTa/udnUQ4XA6FNABAtcqoKsdx59yk6+tTto2LYnYvx6muMwhhnkvGtjFV5b2crFhMkeVEKKSSpNlHcKxnbXJdSBB2KFQplz8jywyELo4jQSh1s4R2nOt6veghMmIBPsMlHA6n0wnTPBdhaNvY+vpkJiPJsri+Ptm0M0E4GAZNk8jlRIbRE4lsIGBcfvlzrosrSgQAUCyGFSVC09XdVXQJwqlWA4JQxjDUVJPXcXpev+1mc3M8EinqeiCbFbPZWDCoq2pXDjTTJHDc8RQIABBFRdfPlcfe2DiWSm3Pza1Wq2zLBEVNC6oqbxj02bPHXBdbWZmr94HDMJRIpJ9/fqExdbBXgsGK91nxvBqPZyVJiUbz3ShQ19lebTmHy9EdCQEAJEkmk3fLshwOf4airLW1menpdW+CWirxhUKkcWcIXQyzGm2PsVgeABCJFGRZXFqan5jYpiizWAxrWtAblC48HAIAotHC6ups3a9QKnEYNqhp1HVBrUZhmFsu8z3VzLdtbHV1/vjxU40bKxXOc6IGAlXP5ZhIyEtLizhuh8Mlx8EgBCRZy+ejglCOx2UIQTCo5/ORmZm1xqcJhMBxiJ7ifprgOG1zk6fpnufqmsZK0ig58Y+0CD3i8fjOzvtqtW81GmkEobyyMtu4G0naoVBro0WjH29u7kzL/rgY5rouiWFuKKTaNk4Qjq4HVJWrG2n6Zns75XVoi8WUU6fmFxaW2wQwb26majWaohzTxHm+srCwtKszBwIAGAZT/yggRI1CNQwGIXDs2FbdasUwtZa9rubmWtRx6omJiZ3NzQldZwWh1H0ME0KHX2S9J3wRAgCAKIqlUqU+K/Pwlkae+96DJC1NCwWD/WSasqym6+FQSCNJ0xOhpgUHV6DrgkqFm5jYAQCQpD03d0aW44FAda9VHEG4ExNrjoNjmNuyMU44XDp5cjEaLe6Vk9G9+RShIVhHJiY2XRfs7CR1nQ2Hy9Foof2M1DCYQCAw+HUPkiO9JqxDkiQAzb8Yx8EKhUg2K3o1aUyT3N5O0HTnbkqlErd7I8+r29spAABC5xaBqjqEzKZMJlkPZAMAEISTTMqy3KLtpq6z6XTSq0eK485eralisfzU1GaxyFer/UeHaVpwZWXWNDvkQHQJhoHx8fTCwmokUtjcHJdlMZ+P7KXwUon3CqCMEL4Iz+E41zWGCtdqlK6zkUghHpc3N4+5LrAsgufL3eQi7dVi2muyixD0TsLzPYe2NFEoCKFQZbejMhIp2zbmukBVOXAuS2ha09g2TtFGWFY/fnzZMGhZ7rOD1enTc8mkPGBz4t0QhDM1tRGP5ximtro6c/r07C9+8ZLGHWybIMkbh3vRA8AX4TlEUUynk54OEQJrazPeksYzMJw+vVgoRJLJzrFpW1upJk+gh+tCCF0AAELQGwnL5UFHwmxWbFmEH0K0sjJ3+vRxyyKzWalaZSYn13vqDwMAiMXy+XysZd+ojlxxxUnTJNbXJ/o5uAtYVp+bW8VxdPnlzzduz+ejkUhkr6MuWvw14TlwHJekO2RZYdlHXBcbGzv/FJ+dXXFdvFwOdTOMGAbT0kqBYeiFGVT/KyXTJM6enWAYc3x8W9fZaLRFZhBCMJ8Xjh8fQlulhYXlTCYZieR7zbgnSSsSKeK4k89HhlhEp5G1talUKt34UTsOhuM3jJab3sMfCc9DEEQikcDxuxXlPwUC59d+JGnTdK1Q6KpXUZvSaV7qOkmaXTrxmtC0oKKIs7Nr0Wg+k0kYBtWy4YSiRKamNndv7wMcd1KpdKEQ7a+QKc+rjoPt7KSGcjONbGxMxOPZQOCCeFRFiUWjwwzEPTB8ETbDsuzs7Gwud0eTzz0cLq2vd+gm237y5jh4tRoIBIyNjalsNua6QJZFWRYVJdoxKX5rK1mt0slkGkIQCBiJRKblMKjrrGEEBm9v2EgiIW9s9DmxlCSFJE3PsjUstrZSkUipqUxJrUZT1LtHcRgE/nR0L5LJZD7/QU37WX1LPJ6zLHJ5eb5NL3gMA4VCuOXqy7JIgrAzmRsikcjll/MQwobCYsC27XT6oURC3utXRBBuN+WJNS0wMdF/8GdLMMyNRApra9OTk2t9lFCKxZSVlblGE+4gyHKc49TdK+FCQUgmD6HT9VDwR8I9iUajgcCrs1nRcc59SiRpCUKHAg2JRLZcvsBEXiwKqvqGWu2dkvSh6elpQRB2P7AJghDFO/fqMp/JJA6l6QVCoFplbJuIREoTE2eXlo73cRIIgW3jp0/P1QPi+kaWRYoyeL5ZgaUSLwi3D3jyQ8QfCduRSCQ++9lfPfwwRtNLno+4nuyDEKzVvOI0c6ChL43rriKEMYyBYa5pUq47R1FUOp2+5ppr2l+LIAjHuRGh+3cPhuVyKJHoKh4Nw5BttwsWcxxMUWI47kQihZblTxGC+XzYcQgAkGWRJGmZJlOrUTjuEIRdLAq9hoM+//zi/Pyq42D5fJhle86TkmVR14OWhZOkIwil3SnLlkVa1q2CMGIO+kZGte7oAVMqlWq1R0IhbWcnKYq5Wo3G8RsjkUjLEpcIIVVVLcsKh8M9lWNwHCebfciL/zRNqlqlLYt23etd92tddoxR1ZCuB/dSrG3jy8tzi4vLtk2cPTsuCOVYTKlrfmlp3nvQNIakNbG+PhWPZ3DcMU3KskiEsDYVIl0XLC0dn59fJgjHdeHzzx/nOI2iaolEtznQa2tT0WihjUMVIZBO35VKDd/2c5D4IuwBTdM0TRMEYf86S5qmWSwWcRzHMIxlWYqiIITVarVWe6DLISibFQWh3FJFmYzUWOHKMKitrXEAEM9XbBsnSWd3jfrdbG+POQ4eCpVpulYqRUKhSj31qRHDoJ5//rKFheV6+DVC0HFw0yTPnp2YmjrbFP5WKEQUJUoQ9vT0eqkk1Go0hI4gqO2NTJlMXBTvGvXCM74IR4NCoeA4X+5GJI6Dr68f80K6AQClEp/NijxfDoeLZ89O7FVFro+KGB6yHIfQNQzaNJlQSPXyehFCGAZisdzS0vGmLA2PXC6mqmwgYEajBYoyV1Zm4vEsx1VqNVpRojjudDNaKkokGLyLYQZdah46vghHBl3Xbfv+3WaJ3RSLfLUaSKUyihJFCIhivlplqlUmm020lMSAKEoEx1E4XDQMhqaNxjVtqcQThNsy5N22CcfBKxUWIZxl9brL4fnnF48fX+roayiXOQjvHLkw0Zb4hpmRgWXZbJYBoLMIw+EyjqN0Og4heiE50KAoS1WF/bgxCCFFGaBVggXHqWtrU7OzLe6ZIGyCsJsaM66tTc/OnumoQE0LOs77IpFLQYHAd1GMFrZ9fvFjGJRn9LdtYndEC8epZ88e89KOPRQlduzY+n7cVa1G7tVnCsOQV3WmS0KhSsfixcWiYFkfGMUY0b3wR8KRQdd1DEOFQsRx8FqNsiwqHC5qWhDD3EwmmUjIrgsBgOUyxzDVVGpnenq9nmCBEFBVdo+qZYMiSdlf//rFL3/5r1q+GghUC4XIUMrsuy7MZiWev33kMgbb44vw4kVRlFjsfDhbpVKpmysMgy6VBK+HDACgUIjFYufiSCUpa5pUPi82zvQqlZAo7ksgtetiKyvzV155cq8dHAcOpbC3prGadpskiSPX+awjvggvXprCkRF60jRJr36p6+KNcaqJRDqXE10XA8CNx3MUZTbZUWs1phvLah8sL8949cv32iGTSSwudlv6rSWuC3M5iWVvjcdHqXxT9/givHhpim4zzbdls98giHOrL0k6v97juArHVVQ15LqtPWb7ZAMvlfhEQm6jwGw2NjExUEqHaVL5/Pvi8filNwDW8UV4MVIulymKavKAMcxT7RNzDSMwSLPePsjlom3aV1UqQdcl+ghVazyDYdyeTPaZ4D8qXLJPl5HGNM2mB79pmh3Nhk01GhvZpy68ELY77c5OosuQ15boOmtZd4jiJa5A4Ivw4kQURYq6IAevWCzyfIewtVRqR5ZbG0BVdfirKdcFwWC73I5BgslqNUrTbr+U/BBt8KejIwBCCMInOrqwOU6V5dhuP0QuF/VqTA2XapX1vPOuCy2L8oK/bZtACNo27rqYZfWsQs/a5Dh4sfj+RKJFzbhLEl+EIwBCyKvJ25GmtEOEQDqd5Plyyw7eA2JZZLEYzmTimhbySvK4LsAwQJI2hA5N10Qxn8kkBKHUfalSkrSLRcE0yb06MV2S+CIcATAMg/BG236gY6UpVRUau3bLcjwWyw+32kUdwwgkkxmGMfL5KMMYTfUmAACeSWZrK0UQTiymdNPMOBIpLi0tSNJbRrRQRX/4a8LRIBaLtWwn6jj4+vqkV8fNtvHGzhaGwbgutk8KdF2A47Y3xBGE5Th7amZ8fEeS5I2NiVxObF+T23Xhzs5dU1PvOiJLwTp+FsXIUK1WDePB+urOtvF8PlIuhxOJtCwnOK6EECZJct2qKsvxepukobO+PjE2llZVvlAQdD10xRW/7ejGM01qY2NSFHP1QJ9GqtVAsRhOJD5wCfsD9+LIveHRJRAIQHibpp0rl5jLSaKYn59f5rjK3NxKPJ5LJOTGH7Cq9l/HviO1Gl0sCpVKcG7uDEWZ3QiHosz5+WUcd5aWFjWt+d4qFTaVuusIKhD4IhwtwuFwrfZ+T4eSlF1dnW6zc3sn3oDMz5+BEE5OngUAhMOF7gt1c5y6uLi0vZ1s3Oi6EKEbhn6To4IvwhEjGo2a5h3FopDNSmNjexae0XWWpgfqPt+eeqiapgUdh+h1AAsEql6fDA9FEY+CU34vfBGOHpFIRNOuD4eLuw2SHuUyn81Gx8cH7bvWEdOk0un42FjPF5qY2KlW6UxGesFUc/3RnIh6+IaZUSWdTsfjDxYKUdMk43E5l5NcF4vFctUqo+uBVGq/TDJ1VlZmCMKdmuo/Udi2idXVmVBIlaT3k+Rw+qh1A0KoUChcPDXzfT/hqBKPx7e2xgRBzWZFVeUnJ9coyl5ZmWFZfeg9yfYADaJAAABB2MlkmqLuPUgFAgAghBdVU3tfhKMKhmHB4J/Ual+enj5T75q0sDCcavPdgONexeOBZlK1GsPzh1AurSk093DxRTjChMPh555L4DjI5QKGQSEEMAxR1PmomlCoHIn0VjC7exxnUAUiBCE8ukbROr4IRxgMw6LRAk0bHFciyRYRbSsrc/snQopyLItoed2uQUcqPG0vjq5J6tKAZW+AEO2lBEEo2vZ+fcXj41u5nDSIXQ9C4DiPlkr79ZgYFXwRjjbhcLhSuW2vV6PRwsbGdNPGXC66sjK9tZU6dWphkEtjmBuJKHtlMHZJPJ6t1R4Z5AyXAL4IRx6KoiyrtXURw9xwuNDUGNh18bm5tfHxHUlSZFnM5cT2kTdtYBjTsvAXulP1zXWDHT7yHPU1YalUEoR9qUt9YAiCoCh8y9bZAIBotJBOJysVXtcDrgtMk67XPqs3VCqV+L6vPjGxI8tSPN5/bRt/WXjURTjqCgQAQAgRuhGAT+21QzwuWxaRSu2Z09SyrVJ7trfHqlUKAMDzla2tFEnaQynvezQ56iK8NHCcdvmyGObSdLusQlXlehrK1tcnk8lMvbiwJOXKZf706TmKslKpdK8ZjG730d+XKL4IRx5VVQXhC4OdozcZBAJGUyMXni/zfNlx8GJRyGbFcLgoijmC6Oq0LPu3un4Py+5j4tVFjm+YGXmCwWA9ybA/QiHNdXv4JZRKrdsh4bgTi+VnZ9cMI1Aqhbu093BcpVLp3GrqEsYX4ciDYZjrDhR3IknKmTNTvVyx3RBHUaYglGi6JopKLtdVghKOf9WyOlRVvYTxRXgpIAhCm8q/HcEwd7gmykikWK0GeF7da8zcvf9zzz1lmvtSDufixxfhpQBN05Z10yDBK7aN6zqztZVYWZk5c2bK63y4Fzxfbn82TQsShNXNngAAWY7LcvzKK0+Wy513viTxDTOXCDRN2zZJkn1O6mKxnGlSolig6czp03Nra1OeQTWV2umjmUQmI83MrAMAMMy1LIIg7KaBNpsVNS3kulgoVOY4NRCotjyP67qu6xLEJf4rvcTf3tHBtm0c7z+WOhY77+ULh0v1zjM7O0mE1GBQ29xMYRh8IYm+w9y1nuJEEE4mIzFMDSGsXOYAwHi+BCGgaVOS1jreVblc1jRtfHy8z3c1IvgivERwHGevntW9Ui4LdREmEnKlEspmY5KUL5W4zc0xUcxrWhBCNxIpIoTtVY8YIQAhqNXoiYlzGcbtW0qBVv3beJ6HECKEFEWJRCL43t0tbNtWVXVEC5b6a8JLgUqlEgh8aVhnc93zYsAwl+fLkqTQdM2rqqiqQZbVQqHK2tpUsRhueQYMs22bBAM3osEwjKZpVVUpimpfh0VRFBx/WNO0QS53WPgj4chjGIZpPhyN9u9q29lJVSrnu8Cb5p4B2SRpS5KSy4muS8zNnWnpgbBtLBg0vNVpN4aZOi0ttAzDNPVpbAmOP8HzaibzxWDwnu6veJHgi3C0QQgVi59PJvOdd92bajWwsLDa/f6imMvlRF1nW85Fd3bGU6lzU1AcR6ZJNCb77weaplFUDQDA82qlUrmo6sd0gz8dHW0KhUIs1jp/Yl8RxdzeBe1p2z73cOf5UrEY7TpV6tFeb8N13c3Nh6rVh712VIFAtVptbWi9mPFFONrYtj1YgYlhYlmEokQjkeLKymwuFwMAEIQTj8uJRLab3N8+qm9CCGna2iuNa1Twp6MjDEIIwscO+x5ApRKqVplymacoa2xshyBsScqpauj06XmOU5PJTDCoVSqdo1shRK7r9lQFWJZlUWyaij8KwH09volDxhfhCFOtVvvwpA+XdDrF86V4PBePX+CB4LgKxy2vrU25LoZhLo53zqhACOs+es5xHFmWY7HPex2C61CUXavVaHrAZP8DxZ+OjjCVSiUYPEyjvGkShkG3aQNsWYQX7Q0hap+ogRBA6PouRWhZVjb7UDL5YFPuYqUS4jh15MLf/JGwfxBCpmke4kMXwscP69K6zp49e0ySMixbXVmZcV0oioXdyfV1yw1CwDSpNn2zFSXWTV36crlsGAYATySTLbKQKxU2m40lEgMldh08vgj7xytAfVhXt23bC5IeBr1VEHVdrFTijh8/5f2ZSAAAgKqGTp1ajMczjZVOy+VwNFoslznLItooUNdZHL+lTYyopmm6riP0OM+rPL/neXDcPXbsPSMXa+pPR/sHw7BDrKau6/qwFoSzs+srK3Pte1nXyWTi2Wxst0GS4yoLC6cJwjl16nh95jkzs7K8PCfLYiqV2euE5DJgugAACcpJREFUxSJvGHe0jzjTdV2SPhWPZ9soGQAAABo5BQJ/JBxdSJIsFMKaFuT5MoQon4/Mzq7tFcnZkfn5lXQ6mUym21e2395OBINVQWi96MIwxHGVRCJdn3liGDh+fMk0W/zMHAcrFCKuewPP8+1jYhzHgbCzC9GySABu7LjbRYgvwlGFYZh8Hp+bOxfpEovls1mRIGyEoOOcG4ggBAThIARsGwcAlsvC7Oxqy7x4grApykynEwThlMscAC5CxMTEZuPIk8nEg0FdEDqXZmsq3dQUMWOaZLEYxrAbotFoNw6JfD7fjSewUgmOaAC3L8JRBULYWEMNQtSxYlospihKBELoJbx7gx5CkOdVw2AqFZYg3KmpDQidQiEiCKWNjQlBUHHcLhQEDIORSKEbBQIA2ijLMOhy+f3xeA91uyHsault2/gozkWBL8KRxnGuc5wHu3HBeeC4K0kKAEAU6+mCKYKwAEAcVx4f34bQzWQSwaDutViLxZR8PiKKSk8hKZZFhcOt20sYBlOp3BGP99wZ20uM6sSoGjhG9b59AADxeFyW44NUtSBJS5JykqSEw2UMcyEEyWSmXgsYx13LojWtt2KE5XLr+GlFier6nX30pud5vlzuUCN8pLus+SIcYSCEknSHosT27xJjY9tbW2M9HdJy7phOx3n+7v46VFMUVat1yGYqFoXRLabui3C0IQhiwHqHHZmY2EynE93v77oXiNBx8J2dZCz2gUF6YkPYoWmMZREH3HN7iPgiHHlCodCACeztYVkjHC7u7CS6nPcKwgX5TbmcmEzeta8KcRwMx28a5AyKcph5GL4IRx6WZavV/a0hzzC1SKSQTifK5Q51RB0HL5UumBZi2LsGjCuybbt9skixGBnEOZHP50ulf+wjkWpY+CK8FKCom02zv9idbn95DGOmUplstsP6s1AIT0+vXbjtsfb9ajqSz+djsXZFolz3xp4SoJqIRCLT07ceYgSiL8JLgXA4XCi0rrnUBtcF3YvQIxg0DGNPG4lt44WC0NQHRhRzg0z2SqUShj3WRiCOg7epwtYNEMJBNDw4vggvEXj+9mKxB/OgbWOGwfb69E8m09vbY9lsbPe1XBdbXp6bn2+uVQMhgPCx/iZ7CCHL+tv2XspiUQiHe34AXVT4IrxECAQCANyu610tDpeXZ1VVqNXIvbzqbZidXfU8/pmMlM1KhsGoasgwmEwmvri43FLVwWC1v8FQ13WW3TNZ0cN1bzrccWxwRvvufRoJh8NdOtYxDEQihUik1JSW3iWlEi/LUihUkaRsocC7Li7LUiBg7NWtqaOQ9gLH8XocbEtcFxt1BQJfhJcYEO5vGoFhMKdOzROEvbi4HAxWAQCplCwIpcnJsy1TJQaEpuk2S1AAQKnE83yHYJqLH1+EPt2iqqGdHen48eWW9SxUld9r3ddlpuJuIISu285Nb9vk6Pro6/gi9OkKXQ+USvzMzNm9dkgm5XK5tWXIdbG+vRQcx7WdY1/f32kvKnwRXlLsn8dZVbmJie02OwSDlVqtta/StvG+xyuKoiyr9bGaFgwGR6ycTEt8EV5SEARRr349LDSN3dlJMEyt456q2iwJx8Gz2Vilcld/odsAAIIgLKu1tjUtwLL7Gyp0MPj5hJcUHMepKre76lkTDFPNZmOep6E9lkWk0/GZmbVubJCCcL4pjWEw5TJHEDeJYmTAYBQIb9C0hxsXoqZJlss8Rd0yyGkvHnwRXlIQBGHbncNHKMoCAFYqoVDovGy8qhMQIoap1VMKFSU2M7PRkxfAsoh8PhoI3BKPD8duKYqipt0ryxpFfZkgbF0PUtTNsZhwiIFmwwUeYtyqz34gy3I8fn/7fXI5URRzS0vzi4vL9Y2ZTDyRkAEA+XysUAhDiBwHxOPZbkparK5OcZyuaYHp6Y3t7TvHxnpLQewS0zQty7o01oGN+CPhpQbLstUqEwh0roZY99TbNpHLxerFvKNRJRrtIcClVBKi0WI4XAJABADgOG6a5n4Ug6Qo6hBrTO4fvmHmUiMYDGpaV2MFhK5hMMUiv7o6m0xmOK7PNqO5nOiFvzGMsbU1Zttf7+88RxZfhJcaEEKEuvpap6fXFSVCkvbi4tIgV0wmd9LphOtCTWMFoQQhvCTHq/3DF+ElCEHcXKt17pCBYWB8fKdNO5cuCQb1aLSwvj4ZDFZDIY0k3zHgCY8avggvQSKRSD4fOUiLG0WZMzPrHKe67iHn5o0i/ud1aRKPf8CrRrG9napUDq6Hu66zgUDgwC53aeCL8NIEx/F4/M5cThwb29neTqoq50VRIwRyuZiq9q8TWY4vLS3sDo4BACAEVZW7NKJYDhLfT3gpUygUgsFPU5Spqnw2G0UIAgCPHdts6q3ZJa4LlpfnvGWkokQdh4jH5fqrhsEUi7fF43F/Otorvp/wUiYSiWQy4URC5rgyxw3av/b06YX5+VXPuxgM6rnc+XBQ/f9v7w5y2wTCMAxTYzSAR3HAshTViyhnqtqumsZVL9Ub9FpNlR2Y4IBBdmK6sORKURUnNu2Xmvc5ALsXCWb+mUVYVV/Ozv7iMcRHjJfWkRsMPr30HPs/yrJoPE42BT489G5vT7dDFet1ryg+j0YUuCciPHLW2qK4PPw5UZTd3Z0sFuFsFl1fT+L49xmESTLa44YJbBHh8YvjOE1buLjv/PzHbBbd37sXFz+3Vw7O5zYML/kOPAQ/Zjohy7Iw/GbM7pnAF1ksgrr+uvesIDZ4gXVCFEVZdtXuM4vCUmAr+DvaFe3eYpvnQ8eZxvH/ehvZq0KEndA0TV3vHm56pjSNjZla++824hw3IuyEpmmMaWHCaLXqp+koiqbG7N4gjmciwk7o9XpN895xdkzcP6GuzXx+4rofWZFvHRF2xc5VhM3hNGU5MGbp+3XTvCkKGwRVkoxc950xpq0zY/AIEXZFEAQ3N28nk8dnh1aVXxTWcT54nrder621y+UySWrHcay1eV6Ox6cH3j2Gp7FO2CGr1SrLsn7/exxnde3n+ZXrur7v84tFiwg7p6qqsiw9zxsOWWB4FYgQEGPHDCBGhIAYEQJiRAiIESEgRoSAGBECYkQIiBEhIEaEgBgRAmJECIgRISBGhIAYEQJiRAiIESEgRoSAGBECYkQIiBEhIEaEgBgRAmJECIgRISBGhIAYEQJiRAiIESEgRoSAGBECYkQIiBEhIEaEgBgRAmJECIgRISBGhIAYEQJiRAiIESEgRoSAGBECYkQIiBEhIEaEgBgRAmJECIgRISBGhIAYEQJiRAiIESEgRoSAGBECYkQIiBEhIEaEgBgRAmJECIgRISBGhIAYEQJiRAiIESEgRoSAGBECYr8A21ZHo9GB1WIAAAAASUVORK5CYII=" style="display: block; margin: auto;" /></a>
+</div>
+</div>
+</div>
 <p>Now lets loop through this directory (dir_file) and collect all the metadata for a specific tile. The selection of dates will be done later.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
@@ -1061,211 +1070,13 @@ for (i in 1:length(dir_file)){
   datalist[[i]] <- dat # add dat your list
 }
 # merge the created dataframes into a single dataframe of product information on your selected tiles.
-df_probav_down <- do.call(rbind, datalist)</code></pre>
+df_ProbaV_down <- do.call(rbind, datalist)</code></pre>
 </div>
-<p>Below a simple figure on the number of .tif's per band that we retrieved for a our selected tile in the dir_file directory.</p>
 <div class="row">
-<button class="source R toggle btn btn-xs btn-primary">
-<span class="glyphicon glyphicon-chevron-down"></span> R source
-</button>
-<pre style=""><code class="source r"># plot the retrieved data
-df_probav_down %>% ggvis(x=~tile, fill=~band) %>% layer_bars()</code></pre>
-<!--html_preserve-->
-<div id="plot_id473195801-container" class="ggvis-output-container">
-<div id="plot_id473195801" class="ggvis-output">
 
 </div>
-<div class="plot-gear-icon">
-<nav class="ggvis-control"> <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
-<ul class="ggvis-dropdown">
-<li>
-Renderer: <a id="plot_id473195801_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id473195801" data-renderer="svg">SVG</a> | <a id="plot_id473195801_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id473195801" data-renderer="canvas">Canvas</a>
-</li>
-<li>
-<a id="plot_id473195801_download" class="ggvis-download" data-plot-id="plot_id473195801">Download</a>
-</li>
-</ul>
-<p></nav></p>
-</div>
-</div>
-<script type="text/javascript">
-var plot_id473195801_spec = {
-  "data": [
-    {
-      "name": ".0/group_by1/count2/stack3_flat",
-      "format": {
-        "type": "csv",
-        "parse": {
-          "stack_lwr_": "number",
-          "stack_upr_": "number"
-        }
-      },
-      "values": "\"band\",\"x_\",\"stack_lwr_\",\"stack_upr_\"\n\"GEOMETRY\",\"X17Y06\",0,72\n\"NDVI\",\"X17Y06\",72,144\n\"RADIOMETRY\",\"X17Y06\",144,216\n\"SM\",\"X17Y06\",216,288\n\"TIME\",\"X17Y06\",288,360"
-    },
-    {
-      "name": ".0/group_by1/count2/stack3",
-      "source": ".0/group_by1/count2/stack3_flat",
-      "transform": [
-        {
-          "type": "treefacet",
-          "keys": [
-            "data.band"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "scale/fill",
-      "format": {
-        "type": "csv",
-        "parse": {}
-      },
-      "values": "\"domain\"\n\"GEOMETRY\"\n\"NDVI\"\n\"RADIOMETRY\"\n\"SM\"\n\"TIME\""
-    },
-    {
-      "name": "scale/x",
-      "format": {
-        "type": "csv",
-        "parse": {}
-      },
-      "values": "\"domain\"\n\"X17Y06\""
-    },
-    {
-      "name": "scale/y",
-      "format": {
-        "type": "csv",
-        "parse": {
-          "domain": "number"
-        }
-      },
-      "values": "\"domain\"\n0\n378"
-    }
-  ],
-  "scales": [
-    {
-      "name": "fill",
-      "type": "ordinal",
-      "domain": {
-        "data": "scale/fill",
-        "field": "data.domain"
-      },
-      "points": true,
-      "sort": false,
-      "range": "category10"
-    },
-    {
-      "domain": {
-        "data": "scale/x",
-        "field": "data.domain"
-      },
-      "name": "x",
-      "type": "ordinal",
-      "points": false,
-      "padding": 0.1,
-      "sort": false,
-      "range": "width"
-    },
-    {
-      "name": "y",
-      "domain": {
-        "data": "scale/y",
-        "field": "data.domain"
-      },
-      "zero": false,
-      "nice": false,
-      "clamp": false,
-      "range": "height"
-    }
-  ],
-  "marks": [
-    {
-      "type": "group",
-      "from": {
-        "data": ".0/group_by1/count2/stack3"
-      },
-      "marks": [
-        {
-          "type": "rect",
-          "properties": {
-            "update": {
-              "stroke": {
-                "value": "#000000"
-              },
-              "fill": {
-                "scale": "fill",
-                "field": "data.band"
-              },
-              "x": {
-                "scale": "x",
-                "field": "data.x_"
-              },
-              "y": {
-                "scale": "y",
-                "field": "data.stack_lwr_"
-              },
-              "y2": {
-                "scale": "y",
-                "field": "data.stack_upr_"
-              },
-              "width": {
-                "scale": "x",
-                "band": true
-              }
-            },
-            "ggvis": {
-              "data": {
-                "value": ".0/group_by1/count2/stack3"
-              }
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "legends": [
-    {
-      "orient": "right",
-      "fill": "fill",
-      "title": "band"
-    }
-  ],
-  "axes": [
-    {
-      "type": "x",
-      "scale": "x",
-      "orient": "bottom",
-      "layer": "back",
-      "grid": true,
-      "title": "tile"
-    },
-    {
-      "type": "y",
-      "scale": "y",
-      "orient": "left",
-      "layer": "back",
-      "grid": true,
-      "title": "count"
-    }
-  ],
-  "padding": null,
-  "ggvis_opts": {
-    "keep_aspect": false,
-    "resizable": true,
-    "padding": {},
-    "duration": 250,
-    "renderer": "svg",
-    "hover_duration": 0,
-    "width": 300,
-    "height": 300
-  },
-  "handlers": null
-};
-ggvis.getPlot("plot_id473195801").parseSpec(plot_id473195801_spec);
-</script>
-<!--/html_preserve-->
-</div>
-<h2 id="clean-data">clean data</h2>
-<p>The function 'getProbaVQClist' creates a dataframe of state mask (SM) codes based on the quality indicators in the Status Map dataset. It provides an overview of clear codes per channel. Explanation on these SM codes can be found in the <a href="http://proba-v.vgt.vito.be/sites/default/files/PROBAV-Products_User_Manual_v1.2.pdf">ProbaV Product User Manual</a>, which can also be downloaded directly from the Vito <a href="http://www.vito-eodata.be/PDF/portal/Application.html#Home">website</a>.</p>
+<h2 id="clean-data">Clean data</h2>
+<p>The function 'getProbaVQClist' creates a dataframe of state mask (SM) codes based on the quality indicators in the Status Map dataset. It provides an overview of clear codes per channel. Explanation on these SM codes can be found in the <a href="http://ProbaV.vgt.vito.be/sites/default/files/ProbaV-Products_User_Manual_v1.2.pdf">ProbaV Product User Manual</a>, which can also be downloaded directly from the Vito <a href="http://www.vito-eodata.be/PDF/portal/Application.html#Home">website</a>.</p>
 <p>For clear pixel selection, we use the SM codes with 'clear_all', which means that a certain pixel is not marked as shadow, cloud, ice or sea. Additionally, it selects only the 'good' quality pixels of the radiometric bands (SWIR, NIR, RED, BLUE).</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
@@ -1348,12 +1159,12 @@ glimpse(df)</code></pre>
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">#How many radiometry bands do we have of the assigned tiles?
-print(paste(nrow(df), " radiometry bands", sep = ""))</code></pre>
+<pre style=""><code class="source r"># How many radiometry bands do we have of the assigned tiles?
+print(paste("We currently have ",nrow(df), " radiometry bands", sep = ""))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
-<pre style=""><code class="output r">## [1] "72 radiometry bands"
+<pre style=""><code class="output r">## [1] "We currently have 72 radiometry bands"
 </code></pre>
 </div>
 <p>Next step is to keep the quality control values in the data which correspond to the QC_val as result of the 'getProbaVQClist' function. Lets test this on a single date/location. Select a RADIOMETRY.tif or NDVI.tif file from the downloaded data folder and assign it to a variable.</p>
@@ -1391,8 +1202,8 @@ plot(raster(filename))</code></pre>
 </button>
 <pre style=""><code class="source r">par(mfrow = c(1, 1))</code></pre>
 </div>
-<h2 id="proccessing-a-probav-bath">Proccessing a ProbaV bath</h2>
-<p>The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. In order to process both the Radiometry and the NDVI datasets, we will have to run the processProbaVbath function twice, with different patterns.</p>
+<h2 id="proccessing-a-probav-batch">Proccessing a ProbaV batch</h2>
+<p>The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. In order to process both the Radiometry and the NDVI data sets, we will have to run the processProbaVbatch function twice, with different patterns.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1410,15 +1221,13 @@ processProbaVbatch(dir_file,
                     ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
                     overwrite=F)</code></pre>
 </div>
-<h2 id="input-check-for-next-functions">Input check for next functions</h2>
-<p>The following section sets the required parameters for the next function, the 'virtual raster stack'. Most of the parameters are pretty basic, or are repeated here as reminder.</p>
+<h2 id="virtual-raster-stack">Virtual Raster Stack</h2>
+<p>The following section sets the required parameters for the function 'virtual raster stack'. Most of the parameters are pretty basic, or are repeated here as reminder.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r"># ----- check input --- #
-tn <- 1 # tile number (tn) 
-# Select tiles of your study area. Multiple tiles can be coerced together. 
+<pre style=""><code class="source r"># Select tiles of your study area. Multiple tiles can be coerced together. 
 tiles <- c("X17Y06") #e.g. c("X17Y06","X18Y06")</code></pre>
 </div>
 <p>Lets use the getProbaVinfo function again to visualize a certain tile data that we have.</p>
@@ -1427,11 +1236,13 @@ tiles <- c("X17Y06") #e.g. c("X17Y06","X18Y06")</code></pre>
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># set directory of the processed files as a result of the processProbaVbatch function
-probav_sm_dir <- paste(outdir,"/", sep = "")
+ProbaV_sm_dir <- paste(outdir,"/", sep = "")
+
 # lets retrieve information on the available data that we have selected by setting our parameters.
-df_probav_sm <- getProbaVinfo(probav_sm_dir, pattern =  '_sm.tif$', tiles = tiles)
+df_ProbaV_sm <- getProbaVinfo(ProbaV_sm_dir, pattern =  '_sm.tif$', tiles = tiles)
+
 # visualize product information, such as bands and acquisition dates. 
-glimpse(df_probav_sm)</code></pre>
+glimpse(df_ProbaV_sm)</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1449,52 +1260,58 @@ glimpse(df_probav_sm)</code></pre>
 ## $ fsize   <dbl> 81955837, 112905591, 96659102, 91471124, 96349058, 937...
 </code></pre>
 </div>
+<p>The following parameters are required to be set. A small explanation is included on each parameter.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># ----- next parameters ----#
+
 # read and assign the unique available bands to a variable
-bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
-#unique(df_probav_sm$band)
+bands <-  df_ProbaV_sm[df_ProbaV_sm$date == df_ProbaV_sm$date[1], 'band']
+
 # read and assign the acquisition dates to a variable
-dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
-# minrows is a parameter for the coming raster processing functions. It allows you to set the minimal rows that the coming calc functions will apply their algorithm on simultaneously.
+dates <-  df_ProbaV_sm[df_ProbaV_sm$band == bands[1], 'date']
+
+# minrows is a parameter for the coming raster processing functions. It allows you to set the minimal raster rows that the coming calc functions will apply their algorithm on simultaneously. The minrows parameter depends on the computational capacity of your machine. Currently, there is no optimal setting for the amount of minrows and cores. However, it is generally adviced that with large datasets, the minimal rows parameter should be set lower (e.g 7) to avoid crashes.
 minrows = 15
-# check for available cores and set cores (minus 1)
+
+# check for available cores and set cores (minus 1). The amount of cores also depends on your available RAM. If you have very little RAM but many cores, the cores might run out of memory and crash. For a machine with 32GB of RAM, around 10-15 cores could be used, but also depends if more users are working with your machine at the same time. The optimal amount of 'minimal rows' and amount of cores might require tweaking.
 mc.cores = detectCores(all.tests = FALSE, logical = TRUE)-1
+
 # create directory for the log files
 dir.create("rsdata", showWarnings = FALSE)
-dir.create("rsdata/probav", showWarnings = FALSE)
-dir.create("rsdata/probav/logs", showWarnings = FALSE)
-# set log name
-logfile <- file.path(getwd(), paste0("rsdata/probav/logs/", tiles, ".log"))
+dir.create("rsdata/ProbaV", showWarnings = FALSE)
+dir.create("rsdata/ProbaV/logs", showWarnings = FALSE)
+
+# set logfile name. This will save a log file which allows you to trace back any warnings or errors that originate from your functions. 
+logfile <- file.path(getwd(), paste0("rsdata/ProbaV/logs/", tiles, ".log"))
+
 # create directory for output results and temp raster results
-dir.create("rsdata/probav/metrics", showWarnings = FALSE)
+dir.create("rsdata/ProbaV/metrics", showWarnings = FALSE)
 dir.create("/userdata/temp", showWarnings = FALSE)
 
+# set raster options. This is optional and feel free to tweak these settings.
 rasterOptions(todisk = F,
               tmpdir = file.path("/userdata/temp", collapse =""))</code></pre>
 </div>
-<p>Select bands: Band selection for the the stacking of raster layers. For this tutorial, we use the BlUE, SWIR and NDVI bands for the classification. However, you can select any of the available bands from the PROBA-V sensor (e.g. including NIR/RED).</p>
+<p>Select bands: Band selection for the the stacking of raster layers. For this tutorial, we use the BlUE, SWIR and NDVI bands for the classification. However, you can select any of the available bands from the ProbaV sensor (e.g. including NIR/RED).</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># Select the bands to use in sequential functions
 bands_select <- '(NDVI|SWIR|BLUE|RED0)' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
-#bands_select <- 'NDVI' # e.g. '(BLUE|SWIR|NDVI)' or '(BLUE|SWIR)' or 'NDVI'
-# Include the .tif extension 
+
+# Include the '_sm.tif' extension to match file names as a result of the 'ProcessProbaVBatch' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")</code></pre>
 </div>
-<h2 id="virtual-stack">virtual stack</h2>
-<p>Create a virtual stack from selected bands. The virtual raster stacking is an alternative to the more conventional raster layer stacking through <a href="https://www.rdocumentation.org/packages/raster/versions/2.5-8/topics/stack">stack</a> or <a href="https://www.rdocumentation.org/packages/raster/versions/2.5-8/topics/brick">brick</a>. Virtual raster stacking is an R wrapper for the 'gdalbuildvrt' function that is part of the Geospatial Data Abstraction Library (GDAL). Opposed to raster::stack or raster::brick, the virtual rasterstack function creates a file (.vrt), linked to the filepath environment of selected datasets. Major benefit is that GDAL vrt was found to query faster than raster::stack.</p>
+<p>Create a virtual stack from selected bands. The virtual raster stacking is an alternative to the more conventional raster layer stacking through <a href="https://www.rdocumentation.org/packages/raster/versions/2.5-8/topics/stack">stack</a> or <a href="https://www.rdocumentation.org/packages/raster/versions/2.5-8/topics/brick">brick</a>. Virtual raster stacking is an R wrapper for the 'gdalbuildvrt' function that is part of the Geospatial Data Abstraction Library (GDAL). Opposed to raster::stack or raster::brick, the virtual rasterstack function creates a file (.vrt), linked to the filepath environment of selected data sets. Major benefit is that 'GDAL vrt' was found to query faster than raster::stack.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r"># --- build a vrt ---#
-# check the gdal version installed on the machine
+<pre style=""><code class="source r"># check the gdal version installed on the machine
 gdalinfo(version = T)</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
@@ -1507,13 +1324,13 @@ gdalinfo(version = T)</code></pre>
 <pre style=""><code class="source r"># create virtual raster stack output name
 vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), ".vrt"))</code></pre>
 </div>
-<p>The virtual raster function within the Proba-V package can create two outputs, a virtual raster stack, or a dataframe including the metadata of the included rasters. This preference can be set by the 'return_raster' variable. Other parameters within the function are the output name (vrt name). the tiles to stack and the available start and end date of the tile selection. We are selecting the whole availabe range of dates.</p>
-<p>As can be observed from the dataframe output (df_probav_sm), we get to retrieve the metadata of our selection.</p>
+<p>The virtual raster function within the ProbaV package can create two outputs, a virtual raster stack, or a dataframe including the metadata of the included rasters. This preference can be set by the 'return_raster' variable. Other parameters within the function are the output name (vrt name). the tiles to stack and the available start and end date of the tile selection. We are selecting the whole available range of dates.</p>
+<p>As can be observed from the dataframe output (df_ProbaV_sm), we get to retrieve the metadata of our selection.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21")</code></pre>
+<pre style=""><code class="source r">b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21")</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1523,7 +1340,7 @@ vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), "
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2015-10-21")</code></pre>
+<pre style=""><code class="source r">df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2015-10-21")</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1531,13 +1348,13 @@ vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), "
 ##  building main vrt, layers: 4
 </code></pre>
 </div>
-<p>Lets see what our dataframe contains. The output of the virtual raster stack which returns as a dataframe is a collection of relevant product information within the limits of your date selection and tile selection.</p>
+<p>Lets see what our dataframe contains. The output of the virtual raster stack which returns as a dataframe is a collection of relevant product information within the limits of your date and tile selection.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r"># returning first four rows of the created dataframe.
-head(df_probav_sm, n=4)</code></pre>
+<pre style=""><code class="source r"># returning the first four rows of the created dataframe.
+head(df_ProbaV_sm, n=4)</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1582,10 +1399,10 @@ mtext("Plotting the 4 bands", outer=F,  cex=1, line=-0.5)</code></pre>
 </div>
 </div>
 </div>
-<h2 id="cloudfilter-example">cloudfilter example</h2>
-<p>&quot;Clouds in satellite observations obstruct the retrieval of vegetation parameters. Therefore a proper cloud screening is pivotal in the pre-processing of the various value-added products. The PROBA-V cloud detection algorithm is a modified version of the method applied to the SPOTVGT BLUE and SWIR observations (Lissens et al., 2000). Using these band reflectances, two separate cloud masks are created. The first (second) mask uses a BLUE (SWIR) band threshold with an additional check at 300 m resolution on the SWIR (BLUE) band. The final cloud mask is a merge of these two masking results. Compared to the SPOT-VGT cloud mask, some modifications were necessary, because the assumption that clouds are observed at the same position in both the BLUE and SWIR bands is no longer valid for PROBA-V, due to the observation time difference.&quot; <a href="http://proba-v.vgt.vito.be/sites/default/files/Product_User_Manual.pdf">source</a> p.17.</p>
-<p>In addition to the added cloud/shadow algorythm applied on the Proba-V products, the Proba-V R package adds an additional cloud filter which requires some mannual interpretation. The following section will visualize the difference between the cloud/shadow algorytm from Proba-V and the created cloud filter function in the Proba-V R package.</p>
-<p>We will start of with a false color image of our subset area previous defined by the extent function. We will simply use all bands available. In order to create a false color image, we will have to rerun our processbatchfunction without filtering the cloud/shadow pixels.</p>
+<h2 id="cloudfilter-example">Cloudfilter example</h2>
+<p>&quot;Clouds in satellite observations obstruct the retrieval of vegetation parameters. Therefore a proper cloud screening is pivotal in the pre-processing of the various value-added products. The ProbaV cloud detection algorithm is a modified version of the method applied to the SPOTVGT BLUE and SWIR observations (Lissens et al., 2000). Using these band reflectances, two separate cloud masks are created. The first (second) mask uses a BLUE (SWIR) band threshold with an additional check at 300 m resolution on the SWIR (BLUE) band. The final cloud mask is a merge of these two masking results. Compared to the SPOT-VGT cloud mask, some modifications were necessary, because the assumption that clouds are observed at the same position in both the BLUE and SWIR bands is no longer valid for ProbaV, due to the observation time difference.&quot; <a href="http://ProbaV.vgt.vito.be/sites/default/files/Product_User_Manual.pdf">source</a> p.17.</p>
+<p>In addition to the added cloud/shadow algorithm applied on the ProbaV products, the ProbaV R package adds an additional cloud filter which requires some manual interpretation. The following section will visualize the difference between the cloud/shadow algorithm from ProbaV and the created cloud filter function in the ProbaV R package.</p>
+<p>We will start of with a false color image of our subset area previous defined by the extent function. We will simply use all bands available. In order to create a false color image, we will have to rerun our ProccesProbaVbatch without filtering the cloud/shadow pixels.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1599,11 +1416,11 @@ bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 # Write the clouds to a new directory, so it wont mess up the original file
 # Select one point in time, lets say: 2015-10-21
 
-cloud_dir <- "rsdata/probav/sm_Withclouds"
+cloud_dir <- "rsdata/ProbaV/sm_Withclouds"
 dir.create(file.path(cloud_dir), showWarnings = FALSE)
 
 # select dir with clouds
-probav_cloud_dir <- paste(getwd(),'/',cloud_dir, sep = "")
+ProbaV_cloud_dir <- paste(getwd(),'/',cloud_dir, sep = "")
 l0_dir1 <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M/20151021"</code></pre>
 </div>
 <div class="row">
@@ -1614,11 +1431,11 @@ l0_dir1 <- "/data/MTDA/TIFFDERIVED/PROBAV_L3_S5_TOC_100M/20151021"</code></pre>
 patterns <- c('RADIOMETRY.tif$')
 processProbaVbatch(l0_dir1, 
                     pattern = patterns, tiles = tiles, start_date = "2015-10-21", end_date = "2015-10-21",
-                    QC_val = 1:255, outdir = probav_cloud_dir,
+                    QC_val = 1:255, outdir = ProbaV_cloud_dir,
                     ncores = 5,
                     overwrite=F)</code></pre>
 </div>
-<p>Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. Set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (lon lat, WGS84)</p>
+<p>Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. Set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (lat/lon, WGS84)</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1630,11 +1447,13 @@ ymin <- 8.840184
 ymax <- 10.39336
 
 # select directory with clouds
-probav_cloud_dir <- paste(getwd(),'/',cloud_dir,'/', sep = "")
+ProbaV_cloud_dir <- paste(getwd(),'/',cloud_dir,'/', sep = "")
+
 # create virtual raster output name
 vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), ".vrt"))
+
 # load the image in our virtual raster stack
-b_vrt_cloud <- timeVrtProbaV(probav_cloud_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin,ymin,xmax,ymax))</code></pre>
+b_vrt_cloud <- timeVrtProbaV(ProbaV_cloud_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin,ymin,xmax,ymax))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1652,7 +1471,7 @@ plotRGB(b_vrt_cloud, 3, 2, 1, stretch='lin')</code></pre>
 </div>
 </div>
 </div>
-<p>Well that looks cloudy! Good, now we can start adding the Proba-V cloud mask and the Proba-V R package cloud filter. Lets start with visualizing the cloud detection method inbedded in the Proba-V data.</p>
+<p>Well that looks cloudy! Good, now we can start adding the ProbaV cloud mask and the ProbaV R package cloud filter. Lets start with visualizing the cloud detection method in-bedded in the ProbaV data.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1665,7 +1484,7 @@ bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # load the image in our virtual raster stack
-b_vrt_cloud_mask <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin, ymin, xmax, ymax))</code></pre>
+b_vrt_cloud_mask <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin, ymin, xmax, ymax))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1683,11 +1502,14 @@ r <- b_vrt_cloud_mask</code></pre>
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">b_vrt_cloud_mask[is.na(r)] <- 9999
+<pre style=""><code class="source r"># set NA's
+b_vrt_cloud_mask[is.na(r)] <- 9999
 b_vrt_cloud_mask[b_vrt_cloud_mask < 9999] <- NA
+
+# subset a single raster band, I will take the BLUE band.
 b_vrt_cloud_mask <- subset(b_vrt_cloud_mask,1)</code></pre>
 </div>
-<p>Lets plot the original cloud detection method inbedded within the ProbaV data.</p>
+<p>Lets plot the original cloud detection method in-bedded within the ProbaV data.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1706,9 +1528,9 @@ plot(b_vrt_cloud_mask, col = 'orange', legend = F, add = T)</code></pre>
 </button>
 <pre style=""><code class="source r">par(mfrow=c(1,1))</code></pre>
 </div>
-<p>Looks good! The orange area here visualises the clouds/shadow and bad pixels detected by the cloud detection algorythm within Proba-V. If you look closely, you can still observe cloud and shadow remnants, mostly near the orange masked clouds. Altough this original cloud detection algorythm allready masked out almost all clouds, we would like to clear as many clouds (and shadow) as possible, so we have a clear reflectance of the pixels. Because remaining clouds in Remote sensing time-series can impair the extraction of seasonal information.</p>
+<p>Looks good! The orange area here visualizes the clouds/shadow and bad pixels detected by the cloud detection algorithm within ProbaV. If you look closely, you can still observe cloud and shadow remnants, mostly near the orange masked clouds. Al tough this original cloud detection algorithm already masked out almost all clouds, we would like to clear as many clouds (and shadow) as possible, so we have a clear reflectance of the pixels. Because remaining clouds in Remote sensing time-series can impair the extraction of seasonal information.</p>
 <p>Lets apply the additional cloud filter! In this example we use the blue band to detect additional cloud and shadow remnants in the landscape. The BlUE and SWIR bands are conventionally sensitive in cloud detection. For our final classification, in the section <em>Spatial Harmonic Metrics</em>, we will use both BLUE and SWIR for additional cloud detection and removal.</p>
-<p>The cloud_filter function applies the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html">loess</a> through the 'ProbaV::smoothloess' function. Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. The threshold values are determined visually, and might require testing to select the optional parameters for cloud detection. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object (We will test this later).</p>
+<p>The cloud_filter function applies the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html">loess</a> through the 'ProbaV::smoothloess' function. Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. The threshold values are determined visually, and might require testing to select the optional parameters for cloud detection. If you wish to tutorial on different eco-regions, be sure test different thresholds for cloud/shadow detection. The span parameter controls the degree of smoothing. A higher span smooths out the fit more, while a lower span captures more trends but introduces statistical noise if there is too little data (We will test this later).</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1719,7 +1541,7 @@ bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # Select all dates of the blue band
-b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01", te = c(xmin, ymin, xmax, ymax))</code></pre>
+b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2016-03-01", te = c(xmin, ymin, xmax, ymax))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1733,10 +1555,10 @@ b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, 
 dir.create('/userdata/cloud_filter', showWarnings = F)
 out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")</code></pre>
 </div>
-<p>The 'cloud_filter' function is an intensive computational and disk volume demanding function, as it returns all the .tif files (as brick) within you date selection. However, since we select a subset by setting an extent in the 'timeVrtProbaV' function, the output files should not be that big in volume. The 'cloud_filter' is not part of the 'probaV' package, but is derived from it. The threshold parameters are similar to existing functions within the 'probaV' package. Where:</p>
+<p>The 'cloud_filter' function is an intensive computational and disk volume demanding function, as it returns all the .tif files (as brick) within you date selection. However, since we select a subset by setting an extent in the 'timeVrtProbaV' function, the output files should not be that big in volume. The 'cloud_filter' is not part of the 'ProbaV' package, but is derived from it. The threshold parameters are similar to existing functions within the 'ProbaV' package. Where:</p>
 <ul>
 <li>x = Virtual stack of .tif files</li>
-<li>probav_sm_dir: Directory containing the processed probaV bands as a result of the 'ProcessProbaVBatch'</li>
+<li>ProbaV_sm_dir: Directory containing the processed ProbaV bands as a result of the 'ProcessProbaVBatch'</li>
 <li>pattern: Band selection including the _sm (state mask)</li>
 <li>tiles: tile to process</li>
 <li>minrows: See section on 'setting parameters'</li>
@@ -1754,7 +1576,7 @@ out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")</code></
 <pre style=""><code class="source r">bands_select <- '(BLUE)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 
-cloud_filter(x = b_vrt, probav_sm_dir = probav_sm_dir, pattern = bands_sel,
+cloud_filter(x = b_vrt, ProbaV_sm_dir = ProbaV_sm_dir, pattern = bands_sel,
                           tiles = tiles, minrows = minrows, mc.cores = mc.cores,
                           logfile=logfile, overwrite=T, span=0.3, 
                           cf_bands = c(1), thresholds=c(-80, Inf), 
@@ -1762,7 +1584,7 @@ cloud_filter(x = b_vrt, probav_sm_dir = probav_sm_dir, pattern = bands_sel,
 
 blue_c_filter <- brick(out_name)</code></pre>
 </div>
-<p>Lets select the same <em>date</em> as our false colour image from the raster brick we just created. In this case, the first raster subset of our filter.</p>
+<p>Lets select the same <em>date</em> as our false color image from the raster brick we just created. In this case, the first raster subset of our filter.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1770,7 +1592,7 @@ blue_c_filter <- brick(out_name)</code></pre>
 <pre style=""><code class="source r"># select date
 blue_c_filter <- subset(blue_c_filter ,1)</code></pre>
 </div>
-<p>The 'cloud_filter' function returns the Quality Control values. Meaning: &quot;QC&quot; is the status of observations: 0=Missing/band input QC, 1=good, 2=temporal outlier. Here we assign new values to our raster to visualise what the 'SmoothLoes' function detects on clouds/shadow</p>
+<p>The 'cloud_filter' function returns the Quality Control values. Meaning: &quot;QC&quot; is the status of observations: 0=Missing/band input QC, 1=good, 2=temporal outlier. Here we assign new values to our raster to visualize what the 'SmoothLoes' function detects on clouds/shadow</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1793,7 +1615,7 @@ blue_c_filter_copy <- blue_c_filter
 blue_c_filter[blue_c_filter_copy != 2] <- NA 
 blue_c_filter[blue_c_filter_copy == 2] <- 1</code></pre>
 </div>
-<p>Allright! Now lets plot our cloud filter!</p>
+<p>Alright! Now lets plot our cloud filter!</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1805,7 +1627,7 @@ blue_c_filter[blue_c_filter_copy == 2] <- 1</code></pre>
 </div>
 </div>
 </div>
-<p>Lets plots the original false colour again against the 2 cloud filters</p>
+<p>Lets plots the original false color again against the 2 cloud filters</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -1837,7 +1659,7 @@ plot(r3,breaks=breakpoints,col=colors, add = T, legend = F)</code></pre>
 <pre style=""><code class="source r"># Reset layout
 par(mfrow=c(1,1))</code></pre>
 </div>
-<p>The cloud detection algorythm inbedded in the ProbaV data detects most of the clouds. The additional 'cloud_filter' marks some clouds/shadow fragments missed by the cloud detection algorythm. As can be observed, these missed cloud pixels are mainly distributed near the edges of existing clouds.</p>
+<p>The cloud detection algorithm in-bedded in the ProbaV data detects most of the clouds. The additional 'cloud_filter' marks some clouds/shadow fragments missed by the cloud detection algorithm. As can be observed, these missed cloud pixels are mainly distributed near the edges of existing clouds.</p>
 <h2 id="time-series">Time series</h2>
 <p>Lets start of with creating a small time-series subset of a single pixel, randomly chosen from a raster stack. Since we are interested in the seasonal trends of vegetation, lets select the NDVI band for the following example. First step is to create a virtual raster stack from a selected time range on our region of interest (extent).</p>
 <div class="row">
@@ -1850,7 +1672,7 @@ bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # Select all dates of the blue band
-b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))</code></pre>
+b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1864,7 +1686,7 @@ b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, 
 z <- zoo(c(b_vrt[runif(1, 0, ncell(b_vrt))]), getZ(b_vrt))
 
 # read and assign the acquisition dates to a variable
-df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")</code></pre>
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1873,7 +1695,7 @@ df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt
 </code></pre>
 </div>
 <p>Lets apply the smoothLoess function. This function requires a time series <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html">ts</a> object. We create one using the <a href="https://cran.r-project.org/web/packages/zoo/index.html">zoo</a> package. The smoothLoess function uses local polynomial regression fitting, by using the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html">loess</a> function. The smoothLoess function requires the dates to match with the index values, hence we retrieved the matching dates above.</p>
-<p><em>Smoothloess function</em> Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'probaV::smoethloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object.</p>
+<p><em>Smoothloess function</em> Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object.</p>
 <p>The parameters of the 'LOESS' model and the thresholds were chosen based on expert knowledge and visual comparison of the results within the semi-arid region of Africa. These parameters could thus change if you select a different eco-regional area, and may require testing and comparing results for optimal parameter selection.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
@@ -1882,8 +1704,8 @@ df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt
 <pre style=""><code class="source r"># use smoothloes to create time series
 
 # retrieve band and date information from dataframe
-bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
-dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']
+bands <-  df_ProbaV_sm[df_ProbaV_sm$date == df_ProbaV_sm$date[1], 'band']
+dates <-  df_ProbaV_sm[df_ProbaV_sm$band == bands[1], 'date']
 
 # We excluded the threshold parameter and simply plot the output of the smoothLoess function. 
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
@@ -1893,7 +1715,7 @@ plot(f, main = "plotting time series.
      filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")</code></pre>
 <div class="row">
 <div class="col-md-offset-3 col-md-6">
-<a href="#" class="thumbnail"><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></a>
+<a href="#" class="thumbnail"><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></a>
 </div>
 </div>
 <button class="source R toggle btn btn-xs btn-primary">
@@ -1907,19 +1729,22 @@ plot(f, main = "plotting time series.
      filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")</code></pre>
 <div class="row">
 <div class="col-md-offset-3 col-md-6">
-<a href="#" class="thumbnail"><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></a>
+<a href="#" class="thumbnail"><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></a>
 </div>
 </div>
 </div>
 <h2 id="harmonic-metrics">Harmonic metrics</h2>
 <p>We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a linear harmonic model to the time series. The coefficients of this linear model are then returned as metrics (such as min,max values) and seasonality (cos, sin, trend). Here the dates represent the frequency within the harmonic seasonal model. The Cosine (cos) and Sine (sin) represent the amplitude and phase shift, respectively. Second or Third order harmonics will create an additional output of the Cosine and Sine multiplied the selected order. Higher order harmonics will be added to the lower order harmonics.</p>
+<p>The significance parameter allows you to control the metrics p-values, and which to keep, within the harmonic model. Thus, if this parameter is set, metrics with a p-value &gt; significance will be set to '0'. By doing so, we only bring metrics that differ significantly from each other into the next functions.</p>
 <p>QC-good parameter ensures that reflectance values that are missing (0 or not 1) are omitted. Also reflectance values that are marked as clouds/shadow by the 'smoothLoess' function (value 2 in QC-good) will thus be ignored by the linear model.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r">f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
+# With the return_model = T, we return the harmonic model. Otherwise, it will return the coefficients (metrics)
 model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = T)
+# return model
 model_metrics</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
@@ -1930,7 +1755,7 @@ model_metrics</code></pre>
 ## 
 ## Coefficients:
 ## (Intercept)           co           si        trend  
-##    69.77989     -0.11174     -0.16805     -0.03444
+##     52.7449      -0.1016      -0.1205      -0.0260
 </code></pre>
 </div>
 <p>As previously explained, the number of output coefficients (metrics) depend on the parameter 'order' of harmonics. Lets see the difference in output from different 'order' levels.</p>
@@ -1938,7 +1763,9 @@ model_metrics</code></pre>
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = F)
+<pre style=""><code class="source r"># Run the getHarmMetrics function with return_model = F, so we return just the metrics
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = F)
+
 # Order 1
 cat("The metrics returned by the getHarmMetrics function, with order 1, are the: ", names(model_metrics))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
@@ -1959,26 +1786,27 @@ cat("The metrics returned by the getHarmMetrics function, with order 2, are the:
 </code></pre>
 </div>
 <h2 id="spatial-harmonic-metrics">Spatial Harmonic Metrics</h2>
-<p>The following function runs the getHarmMetrics to our virtual raster brick and returns the model coefficients. Each coefficient is thus returned as a raster layer, where the output number of rasterlayers depend on the 'order' that you assigns.</p>
+<p>The following function runs the getHarmMetrics to our virtual raster brick and returns the model coefficients. Each coefficient is thus returned as a raster layer, where the output number of rasterlayers depend on the 'order' that you assigned.</p>
 <p>Lets start of with setting the required variables for the function parameters.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># create output name on the metrics
-out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
+out_name <- file.path(getwd(), paste0("rsdata/ProbaV/metrics/",tiles[1],"_harm_lm2_loess_03_scaled.envi"))
 
 bands_select <- '(BLUE|SWIR|NDVI)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # Create virtual stack
-b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
+b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
-df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+# Create dataframe for metadata
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
 
-bands <-  df_probav_sm[df_probav_sm$date == df_probav_sm$date[1], 'band']
-dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']</code></pre>
+bands <-  df_ProbaV_sm[df_ProbaV_sm$date == df_ProbaV_sm$date[1], 'band']
+dates <-  df_ProbaV_sm[df_ProbaV_sm$band == bands[1], 'date']</code></pre>
 </div>
 <p>Check layers, bands, blocks and cores! Each block represents the number of rows that the 'getHarmMetricsSpatial' function applies to. This speeds up the calculation time significantly. As normally the linear model of getHarmMetrics would be calculated to each cell of a rasterbrick, it now applies the function simultaneously to 15 (or n minrows) rows in parallel.</p>
 <div class="row">
@@ -1987,7 +1815,7 @@ dates <-  df_probav_sm[df_probav_sm$band == bands[1], 'date']</code></pre>
 </button>
 <pre style=""><code class="source r"># --- get metrics ---  #
 cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
-            nrow(df_probav_sm), paste0(bands, collapse = " "),
+            nrow(df_ProbaV_sm), paste0(bands, collapse = " "),
             blockSize(b_vrt, minrows = minrows)$n, mc.cores))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
@@ -1996,9 +1824,9 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 ## layers: 63  | bands: NDVI_sm  | blocks: 13  | cores: 31
 </code></pre>
 </div>
-<p>Now lets try out the getHarmMetricsSpatial function! Most of the functions parameters must be familiar by now. The cf-bands (cloud_free bands) is the coerced selection of the bands to which you would like to apply the cloud filter. My 'bands-select' variable is set to 3 bands, the BLUE, SWIR and NDVI. By setting the cf-bands to c(1,2), I apply the additional cloud filter to band 1 and 2 from my selected bands, in this scenario the BLUE and SWIR. The thresholds follow a similar process, where the given thresholds below apply to the first 2 bands. Each 2 values represent the min and max of your selected threshold, which are the min/max values to detect addtional clouds/shadow.</p>
-<p>The getHarmMetricsSpatial is basicly an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. Depending on your selected region of interest in the timeVrtProbaV2 function and your available cores/memory. The function also allows you to scale up your values, allowing you to switch from float to integers, reducing storage/memory use.</p>
-<p>There are currently two functions within the ProbaV package that are able to stack all the requested time series from your selection. The 'timeVrtProbaV' and the 'timeStackProbaV'. The 'timeStackProbaV' will use the more convential stacking from raster::stack, whereas the 'timeVrtProbaV' will use the gdalbuildvrt (from GDAL) function, to build a virtual raster stack. The 'timeVrtProbaV' requires you to set your extent within the function call (te parameter), whereas the 'timeStackProbaV' has to be cropped after stacking.</p>
+<p>Now lets try out the getHarmMetricsSpatial function! Most of the functions parameters must be familiar by now. The cf-bands (cloud_free bands) is the coerced selection of the bands to which you would like to apply the cloud filter. My 'bands-select' variable is set to 3 bands, the BLUE, SWIR and NDVI. By setting the cf-bands to c(1,2), I apply the additional cloud filter to band 1 and 2 from my selected bands, in this scenario the BLUE and SWIR. The thresholds follow a similar process, where the given thresholds below apply to the first 2 bands. Each 2 values represent the min and max of your selected threshold, which are the min/max values to detect additional clouds/shadow.</p>
+<p>The getHarmMetricsSpatial is basically an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. Depending on your selected region of interest in the timeVrtProbaV2 function and your available cores/memory. The function also allows you to scale up your values, allowing you to switch from float to integers, reducing storage/memory use.</p>
+<p>There are currently two functions within the ProbaV package that are able to stack all the requested time series from your selection. The 'timeVrtProbaV' and the 'timeStackProbaV'. The 'timeStackProbaV' will use the more conventional stacking from raster::stack, whereas the 'timeVrtProbaV' will use the gdalbuildvrt (from GDAL) function, to build a virtual raster stack. The 'timeVrtProbaV' requires you to set your extent within the function call (te parameter), whereas the 'timeStackProbaV' has to be cropped after stacking.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
@@ -2011,14 +1839,14 @@ ymax <- 9.864962
 e <- extent(xmin,xmax,ymin,ymax)
 
 # Create virtual stack
-b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
+b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
-b_vrt_stack <- timeStackProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01")
+b_vrt_stack <- timeStackProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01")
 
 # crop stack to extent
 b_vrt_stack <- crop(b_vrt_stack,e)
 
-df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")</code></pre>
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")</code></pre>
 </div>
 <p>Its not the stacking itself that shows a computational advance, but calling the following function shows that the virtual raster stack takes less time to compute. Lets check out the system time between the virtual raster stack and the common raster::Rasterbrick. Lets write each brick to a different variable and compare them later on.</p>
 <div class="row">
@@ -2026,14 +1854,14 @@ df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># set output file name
-out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles,"_harm_lm2_loess_03_scaled_VRT.envi"))
+out_name <- file.path(getwd(), paste0("rsdata/ProbaV/metrics/",tiles,"_harm_lm2_loess_03_scaled_VRT.envi"))
 
 # run system time
 systime_vrt <- system.time(getHarmMetricsSpatial(x = b_vrt, minrows = minrows, mc.cores = mc.cores,
                                       logfile=logfile,
                                       overwrite=T, span=0.3,
                                       cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, df_probav_sm = df_probav_sm, 
+                                      filename = out_name, df_probav_sm = df_ProbaV_sm, 
                                       order = 1, datatype="INT2S", scale_f = c(10,100,10)))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
@@ -2041,20 +1869,20 @@ systime_vrt <- system.time(getHarmMetricsSpatial(x = b_vrt, minrows = minrows, m
 <pre style=""><code class="output r">## 
 ## Outputlayers: 6 
 ## list()
-## [1] "/home/JD/R_Projects/JornDallinga.github.io/rsdata/probav/metrics/X17Y06_harm_lm2_loess_03_scaled_VRT.envi"
+## [1] "/home/JD/R_Projects/JornDallinga.github.io/rsdata/ProbaV/metrics/X17Y06_harm_lm2_loess_03_scaled_VRT.envi"
 </code></pre>
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># set output file name
-out_name_stack <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles,"_harm_lm2_loess_03_scaled_Stack.envi"))
+out_name_stack <- file.path(getwd(), paste0("rsdata/ProbaV/metrics/",tiles,"_harm_lm2_loess_03_scaled_Stack.envi"))
 
 # run system time
 systime_stack <- system.time(getHarmMetricsSpatial(x = b_vrt_stack, minrows = minrows, mc.cores = mc.cores,
                                       logfile=logfile,
                                       overwrite=T, span=0.3,
                                       cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name_stack, df_probav_sm = df_probav_sm, 
+                                      filename = out_name_stack, df_probav_sm = df_ProbaV_sm, 
                                       order = 1, datatype="INT2S", scale_f = c(10,100,10)))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
@@ -2062,32 +1890,20 @@ systime_stack <- system.time(getHarmMetricsSpatial(x = b_vrt_stack, minrows = mi
 <pre style=""><code class="output r">## 
 ## Outputlayers: 6 
 ## list()
-## [1] "/home/JD/R_Projects/JornDallinga.github.io/rsdata/probav/metrics/X17Y06_harm_lm2_loess_03_scaled_VRT.envi"
+## [1] "/home/JD/R_Projects/JornDallinga.github.io/rsdata/ProbaV/metrics/X17Y06_harm_lm2_loess_03_scaled_VRT.envi"
 </code></pre>
 </div>
-<p>Lets see if there is a difference in time! Consider that this is a small subset, but the difference in time on the machine is significant on larger datasets.</p>
+<p>Lets see if there is a difference in time! Consider that this is a small subset, but the difference in time on the machine is significant on larger data sets.</p>
 <div class="row">
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
-<pre style=""><code class="output r">## System time of the Virtual raster stack:
+<pre style=""><code class="output r">## System time of the Virtual raster stack:  3.452 0.202 34.223 0.291 0.243
 </code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
-<pre style=""><code class="output r">##    user  system elapsed 
-##   3.640   0.403  34.075
-</code></pre>
-<button class="output R toggle btn btn-xs btn-success">
-<span class="glyphicon glyphicon-chevron-down"></span> R output
-</button>
-<pre style=""><code class="output r">## System time of the Virtual raster stack:
-</code></pre>
-<button class="output R toggle btn btn-xs btn-success">
-<span class="glyphicon glyphicon-chevron-down"></span> R output
-</button>
-<pre style=""><code class="output r">##    user  system elapsed 
-##   2.700   0.571  62.111
+<pre style=""><code class="output r">## System time of the Virtual raster stack:  0.17 0.141 61.953 2.477 0.566
 </code></pre>
 </div>
 <p>Now, lets apply the function on a larger extent. Depending on your available cores and RAM, this function could take some time! I strongly suggest to use a small subset area to test the function on, instead of a whole tile or multiple tiles.</p>
@@ -2102,14 +1918,14 @@ ymin <- 8.840184
 ymax <- 10.39336
 
 # set filename
-out_name <- file.path(getwd(), paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled.envi"))
+out_name <- file.path(getwd(), paste0("rsdata/ProbaV/metrics/",tiles[1],"_harm_lm2_loess_03_scaled.envi"))
 
 bands_select <- '(BLUE|SWIR|NDVI)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
 # Create virtual stack
-b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))</code></pre>
+b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -2119,7 +1935,7 @@ b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, 
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">df_probav_sm <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")</code></pre>
+<pre style=""><code class="source r">df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -2136,12 +1952,12 @@ b_vrt <- timeVrtProbaV(probav_sm_dir, pattern = bands_sel, vrt_name = vrt_name, 
                                       logfile=logfile,
                                       overwrite=T, span=0.3,
                                       cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
-                                      filename = out_name, df_probav_sm = df_probav_sm, 
+                                      filename = out_name, df_probav_sm = df_ProbaV_sm, 
                                       order = 2, datatype="INT2S", scale_f = c(10,100,10))</code></pre>
 </div>
-<h2 id="plot-the-metrics">plot the metrics</h2>
-<p>Once the function has succesfully passed, we can see the output! The output is a brick of rasters that store the model coefficients (or metrics) applied in the getHarmMetricsSpatial function. Thus, the amount of bands returned (as raster layers) depends on the chosen 'order' in the getHarmMetricsSpatial. Due to the parallelization of the function, the names of the output (brick) get lost, and the chronological order with it.</p>
-<p>Since the getHarmMetricsSpatial funtion uses the getHarmMetrics function, but applies it to a raster, we can see the names of the metrics by evaluating our previously getHarmMetrics section.</p>
+<h2 id="plot-the-metrics">Plot the metrics</h2>
+<p>Once the function has successfully passed, we can see the output! The output is a brick of rasters that store the model coefficients (or metrics) applied in the getHarmMetricsSpatial function. Thus, the amount of bands returned (as raster layers) depends on the chosen 'order' in the getHarmMetricsSpatial. Due to the parallelization of the function, the names of the output (brick) get lost, and the chronological order with it.</p>
+<p>Since the getHarmMetricsSpatial function uses the getHarmMetrics function, but applies it to a raster, we can see the names of the metrics by evaluating our previously getHarmMetrics section.</p>
 <p>Lets plot the first 6 layers from the created metrics brick. As can be observed, the names are lost of the bands, and the raster values have been scaled by the selected 'scale_f' parameter in the getHarmMetricsSpatial function.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
@@ -2159,11 +1975,7 @@ plot(sub_plot)</code></pre>
 </div>
 </div>
 <div class="row">
-<button class="source R toggle btn btn-xs btn-primary">
-<span class="glyphicon glyphicon-chevron-down"></span> R source
-</button>
-<pre style=""><code class="source r">out_name <- file.path("/userdata/metricsJD", paste0(tiles,"_harm_lm2_loess_03_scaled_Full.envi"))
-b_metrics <- brick(out_name)</code></pre>
+
 </div>
 <h2 id="classification-process">Classification process</h2>
 <p>Lets create a land cover classification dataset from our returned metrics!</p>
@@ -2176,12 +1988,16 @@ b_metrics <- brick(out_name)</code></pre>
 pts <- read.csv(text = csv)
 
 coordinates(pts) <- ~X+Y
+
 # add projection
 projection(pts) <- '+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'
+
 # copy dataset
 pnt_JD <- pts
+
 # crop dataset
 pnt_JD <- crop(pnt_JD, b_metrics)
+
 # plot an image with the point reference data.
 plot(b_metrics$Band.1)
 plot(pnt_JD, add = T, col = 'red')</code></pre>
@@ -2280,15 +2096,17 @@ df_model_JD</code></pre>
 </button>
 <pre style=""><code class="source r"># good to save this!</code></pre>
 </div>
-<p>Lets exclude classes below '5', Because I am not interested in these for this tutorial. Additionally, lets clear any NA's left in the dataframe. Next step is to assign land cover names to the class codes. In this example, I know that the class codes are defined as 1= &quot;Forest&quot;, 2= &quot;Shrubland&quot;, 3=&quot;Grassland&quot; 4= &quot;Cropland&quot;, 5=&quot;Bare&quot;. After that, we need to convert these class names to factor, so that our classification function/model can work with the dataframe.</p>
+<p>Lets exclude classes below '5', because I am not interested in these for this tutorial. Additionally, lets clear any NA's left in the dataframe. Next step is to assign land cover names to the class codes. In this example, I know that the class codes are defined as 1= &quot;Forest&quot;, 2= &quot;Shrubland&quot;, 3=&quot;Grassland&quot; 4= &quot;Cropland&quot;, 5=&quot;Bare&quot;. After that, we need to convert these class names to factor, so that our classification function/model can work with the dataframe.</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># exclude some classes
 df_model_JD <- subset(df_model_JD, Code <= 5)
+
 # exclude NAs
 cc <- complete.cases(df_model_JD)
+
 # assign names to classes
 df_model_JD$LC[df_model_JD$Code == 1] <- "Forest"
 df_model_JD$LC[df_model_JD$Code == 2] <- "Shrubland"
@@ -2298,6 +2116,7 @@ df_model_JD$LC[df_model_JD$Code == 5] <- "Bare"
 
 # convert to factor
 df_model_JD$LC <- as.factor(df_model_JD$LC)
+
 # only complete cases
 print("The amount of reference points per class")</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
@@ -2336,6 +2155,7 @@ cat("------- ranger ---------")</code></pre>
 <pre style=""><code class="source r"># exclude the first 4 columns of the df_model_JD by df_model_JD[cc, -(1:4)]
 ra_JD <- ranger(LC ~ ., df_model_JD[cc, -(1:4)], num.trees=500, write.forest=T,
                   probability = F, num.threads=10, verbose=T, importance = "impurity")
+
 # save the ranger model
 dir.create('data',showWarnings = F)
 dir.create('data/models',showWarnings = F)
@@ -2364,18 +2184,24 @@ print(ra_JD)</code></pre>
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">#### ------------- predict -------------------------------------------
-dir.create('rsdata/probav/results',showWarnings = F)
-# using ranger
+<pre style=""><code class="source r"># ------------- predict -------------------------------------------
+dir.create('rsdata/ProbaV/results',showWarnings = F)
+
+# read the ranger model
 model <- readRDS("data/models/ra_JD_merge5_x16.rds")
+
+# assign the tile
 tiles <- c("X17Y06")
+
+# set the output filename of the prediction results
+out_name <- paste0(getwd(), "/rsdata/ProbaV/results/pred_JD_")
 
 for (tile in tiles){
   print(paste0("--------------", tile, "-------------------"))
   b_metrics <- b_metrics
   print("---predict--------------")
   
-  out_name <- paste0(getwd(), "/rsdata/probav/results/pred_JD_", tile,  ".tif")
+  out_name <- paste0(out_name, tile,  ".tif")
 
   pred_JD <- mcPredictSpatial(model, b_metrics, b_clumps=NULL, df_clumps = NULL, type='response',
                                 mc.cores = 10, ranger_threads = 1, minrows = 12, logfile = logfile,
@@ -2389,24 +2215,24 @@ for (tile in tiles){
 <pre style=""><code class="output r">## [1] "--------------X17Y06-------------------"
 ## [1] "---predict--------------"
 ## list()
-## [1] "/home/JD/R_Projects/JornDallinga.github.io/rsdata/probav/results/pred_JD_X17Y06.tif"
+## [1] "/home/JD/R_Projects/JornDallinga.github.io/rsdata/ProbaV/results/pred_JD_X17Y06.tif"
 ## class       : RasterBrick 
 ## dimensions  : 1566, 997, 1561302, 1  (nrow, ncol, ncell, nlayers)
 ## resolution  : 0.0009920635, 0.0009920635  (x, y)
 ## extent      : -2.064549, -1.075462, 8.839789, 10.39336  (xmin, xmax, ymin, ymax)
 ## coord. ref. : +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0 
-## data source : /home/JD/R_Projects/JornDallinga.github.io/rsdata/probav/results/pred_JD_X17Y06.tif 
+## data source : /home/JD/R_Projects/JornDallinga.github.io/rsdata/ProbaV/results/pred_JD_X17Y06.tif 
 ## names       : pred_JD_X17Y06 
 ## min values  :              0 
 ## max values  :            255
 </code></pre>
 </div>
-<p>Now lets check our results! Below a land cover classified image on our subset! NOTE: Be sure to add and/or change the colours based on the amount of classes you created!</p>
+<p>Now lets check our results! Below a land-cover classified image on our subset! NOTE: Be sure to add and/or change the colors based on the amount of classes you created!</p>
 <div class="row">
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r">r <- raster(paste0(getwd(), "/rsdata/probav/results/pred_JD_", tile,  ".tif"))
+<pre style=""><code class="source r">r <- raster(paste0(getwd(), "/rsdata/ProbaV/results/pred_JD_", tile,  ".tif"))
 r <- as.factor(r)
 rat <- levels(r)[[1]]
 rat[["landcover"]] <- levels(ra_JD$predictions) # double check this
@@ -2414,15 +2240,16 @@ levels(r) <- rat
 
 # add/change colours if you have more legend items
 my_col = c('yellow','darkgreen','lightgreen')
-## Plot
+
+# Plot
 levelplot(r, col.regions=my_col, xlab="", ylab="")</code></pre>
 <div class="row">
 <div class="col-md-offset-3 col-md-6">
-<a href="#" class="thumbnail"><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></a>
+<a href="#" class="thumbnail"><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></a>
 </div>
 </div>
 </div>
-<p>And lets plot the full tile we have been processing in the tutorial. Below the tif. tile with the reference points, followed by our classified image.</p>
+<p>And lets plot the full tile we have been processing in the tutorial. Below the our tile with the reference points, followed by a classified image.</p>
 <div class="row">
 <div class="row">
 <div class="col-md-offset-3 col-md-6">
@@ -2436,7 +2263,7 @@ levelplot(r, col.regions=my_col, xlab="", ylab="")</code></pre>
 </div>
 </div>
 <p>Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. The approach is less suited to distinguish ice clouds from snow/ice!</p>
-<p>This tutorial has been tested on the S5 (5-day) 100m resolution product of Proba-V. It might return unexpected results or errors if attempted on different datasets, and has not been tested yet on other sensors, and products of ProbaV.</p>
+<p>This tutorial has been tested on the S5 (5-day) 100m resolution product of ProbaV. It might return unexpected results or errors if attempted on different data sets, and has not been tested yet on other sensors, and products of ProbaV.</p>
 <p>Please report any errors or anomalies.</p>
 <p><a href="https://creativecommons.org/licenses/by-sa/4.0/">creative commens</a> <img src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png" alt="CC logo" /></p>
 </div>
