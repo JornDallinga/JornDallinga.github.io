@@ -408,7 +408,6 @@ Lets plot the first 4 individual bands from the first date from our virtual rast
 ```{r}
 b_vrt_s <- subset(b_vrt,1:4)
 plot(b_vrt_s)
-mtext("Plotting the 4 bands", outer=F,  cex=1, line=-0.5)
 ```
 
 
