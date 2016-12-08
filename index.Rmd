@@ -384,7 +384,7 @@ vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), "
 ```
 
 
-The virtual raster function within the ProbaV package can create two outputs, a virtual raster stack, or a dataframe including the metadata of the included rasters. This preference can be set by the 'return_raster' variable. Other parameters within the function are the output name (vrt name). the tiles to stack and the available start and end date of the tile selection. We are selecting the whole available range of dates.
+The virtual raster function within the ProbaV package can create two outputs, a virtual raster stack, or a dataframe including the metadata of the included rasters. This preference can be set by the 'return_raster' variable. Other parameters within the function are the output name (vrt name), the tiles to stack and the available start and end-date of the tile selection. We are selecting the whole available range of dates.
 
 As can be observed from the dataframe output (df_ProbaV_sm), we get to retrieve the metadata of our selection. 
 
@@ -647,10 +647,10 @@ vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 # Select random pixel of our raster stack
-z <- zoo(c(b_vrt[runif(1, 0, ncell(b_vrt))]), getZ(b_vrt))
+z <- zoo(c(b_vrt[runif(1, 0, ncell(b_vrt))]), as.Date(getZ(b_vrt), "%Y%j"))
 
-# read and assign the acquisition dates to a variable
-df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+# read and assign the acquisition dates to a variable (df_ProbaV_sm). Notice that the return_raster variable is set to 'False', and will thus return a dataframe with metadata on the selected dates.
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 ```
 
@@ -735,8 +735,8 @@ vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse
 # Create virtual stack
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
-# Create dataframe for metadata
-df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+# Create dataframe for metadata (notice the return_raster variable is set to 'False'. Thus we get a dataframe in return)
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 bands <-  df_ProbaV_sm[df_ProbaV_sm$date == df_ProbaV_sm$date[1], 'band']
 dates <-  df_ProbaV_sm[df_ProbaV_sm$band == bands[1], 'date']
@@ -770,12 +770,13 @@ e <- extent(xmin,xmax,ymin,ymax)
 # Create virtual stack
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
+# Create a raster brick using the raster::stack function
 b_vrt_stack <- timeStackProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01")
 
 # crop stack to extent
 b_vrt_stack <- crop(b_vrt_stack,e)
 
-df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 ```
 
 
@@ -833,7 +834,7 @@ vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse
 # Create virtual stack
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
-df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01")
+df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 ```
 
 
