@@ -14,7 +14,7 @@ output:
 
 ```{r, echo=FALSE, message=FALSE}
 library(knitr)
-opts_chunk$set(fig.width=5, fig.align='center', fig.height=5, dpi=50)
+opts_chunk$set(fig.width=5, fig.align='center', fig.height=5, dpi=60)
 # set the knitR working directory to the same file location as getwd(), in order to maintain the link to R source scripts.
 knitr::opts_knit$set(root.dir = getwd())
 ```
@@ -145,7 +145,7 @@ plot(extent(rast), add = T)
 ```
 
 
-Now lets loop through this directory (dir_file) and collect all the metadata for a specific tile. The selection of dates will be done later. 
+Now lets loop through this directory (dir_file) and collect all the metadata for a specific tile. The selection of dates will be done later.
 
 ```{r}
 # create a loop to apply the getProbaVinfo function on a group of folders
@@ -181,8 +181,11 @@ QC_val <- getProbaVQClist()$clear_all
 print(paste('The Quality control value: ',QC_val), sep = "")
 ```
 
+On the ProbaV-MEP VM, both NDVI and RADIOMETRY .tif files should be stored within the same folder. This can be observed by checking the folder location from which you read your ProbaV data (here 'l0_dir'). 
 
-The Radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI bands. However, the function will extract all the bands that the Radiometry brick contains, including the Red and NIR band. This allows you to play around with more band selections.
+The Radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI bands. However, the function will extract all the bands that the Radiometry brick contains, including the Red and NIR band. This allows you to play around with more band selections. 
+
+NOTE: If you wish to work with different bands than within this tutorial, it might require some function tweaking. Feel free to adjust the functions accordingly on the github account (see bottom site). 
 
 ```{r}
 # First, select the radiometry .tif files from the download folder and which tiles to use
