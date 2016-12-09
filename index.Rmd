@@ -507,10 +507,14 @@ The 'cloud_filter' function is an intensive computational and disk volume demand
   - cf_bands: The selection (numeric) of the bands you would like to use for the cloudfilter function
   - Thresholds: The distance (reflectance) values from the smoothloess model to mask as clouds/shadow
   - filename: output file name
+  - ... e.g. overwrite (Default = False)
+  
+Minrows and mc.cores should be considered carefully when running the cloud_filter on whole tiles. The settings depend on the available VM specs, such as cores and RAM. We have not yet found a way to deal with this issue effectively. Hence, if you run into errors, try to tune down the 'minrows' or the 'mc.cores' (e.g. minrows = 2 when working on whole tiles).
   
 ```{r, eval=F}
 bands_select <- '(BLUE)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
+
 
 cloud_filter(x = b_vrt, ProbaV_sm_dir = ProbaV_sm_dir, pattern = bands_sel,
                           tiles = tiles, minrows = minrows, mc.cores = mc.cores,
@@ -707,7 +711,7 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 
 Now lets try out the getHarmMetricsSpatial function! Most of the functions parameters must be familiar by now. The cf-bands (cloud_free bands) is the coerced selection of the bands to which you would like to apply the cloud filter. My 'bands-select' variable is set to 3 bands, the BLUE, SWIR and NDVI. By setting the cf-bands to c(1,2), I apply the additional cloud filter to band 1 and 2 from my selected bands, in this scenario the BLUE and SWIR. The thresholds follow a similar process, where the given thresholds below apply to the first 2 bands. Each 2 values represent the min and max of your selected threshold, which are the min/max values to detect additional clouds/shadow. 
 
-The getHarmMetricsSpatial is basically an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. Depending on your selected region of interest in the timeVrtProbaV2 function and your available cores/memory. The function also allows you to scale up your values, allowing you to switch from float to integers, reducing storage/memory use. 
+The getHarmMetricsSpatial is basically an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. Depending on your selected region of interest in the timeVrtProbaV2 function and your available cores/memory. The function also allows you to scale up your values, allowing you to switch from float to integers, reducing storage/memory use. This function still has some limitations, as the parameters 'robust' and 'n_years' might throw errors as these have not been efficiently tested yet. 
 
 There are currently two functions within the ProbaV package that are able to stack all the requested time series from your selection. The 'timeVrtProbaV' and the 'timeStackProbaV'. The 'timeStackProbaV' will use the more conventional stacking from raster::stack, whereas the 'timeVrtProbaV' will use the gdalbuildvrt (from GDAL) function, to build a virtual raster stack. The 'timeVrtProbaV' requires you to set your extent within the function call (te parameter), whereas the 'timeStackProbaV' has to be cropped after stacking. 
 
@@ -790,7 +794,7 @@ df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt
 ```
 
 
-So, time to grab something to eat or a coffee!
+So, time to grab something to eat or a coffee! Remember, this function still has some limitations, as the parameters 'robust' and 'n_years' might throw errors as these have not been efficiently tested yet. 
 
 ```{r, eval=F, results= 'hide'}
 b_metrics <- getHarmMetricsSpatial(x = b_vrt, minrows = 5, mc.cores = 5,
