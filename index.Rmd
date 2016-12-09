@@ -2,7 +2,7 @@
 title: "ProbaV"
 author: "Jorn Dallinga, ProbaV package used from Johannes Eberenz"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-Version: "1.0 (updated 18-11)"
+Version: "1.0 (updated 9-12)"
 output:
   knitrBootstrap::bootstrap_document:
     title: "ProbaV" 
