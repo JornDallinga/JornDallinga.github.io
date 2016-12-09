@@ -1,4 +1,4 @@
-cloud_filter <- function(x, probav_sm_dir, cf_bands, pattern, tiles, thresholds=c(-50, Inf) , span=0.3, minrows=1, mc.cores=1, logfile, ...) {
+cloud_filter <- function(x, probav_sm_dir, cf_bands, pattern, tiles, thresholds=c(-50, Inf) , span=0.3, minrows=1, mc.cores=1, logfile, overwrite = F, filename, ...) {
 
   thresholds <- matrix(thresholds, nrow=2)
   
@@ -35,7 +35,7 @@ cloud_filter <- function(x, probav_sm_dir, cf_bands, pattern, tiles, thresholds=
   }
   
   
-  out <- mcCalc(x=b_vrt, fun = cf, minrows = minrows, mc.cores = mc.cores, logfile=logfile, out_name = out_name, overwrite = F, mc.preschedule = FALSE)
+  out <- mcCalc(x=b_vrt, fun = cf, minrows = minrows, mc.cores = mc.cores, logfile=logfile, out_name = filename, overwrite = overwrite, mc.preschedule = FALSE)
 
   return(out)
 }
