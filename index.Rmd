@@ -1081,7 +1081,10 @@ Congrats! Now have fun applying this tutorial on your region of interest! Keep i
 
 This tutorial has been tested on the S5 (5-day) 100m resolution product of ProbaV. It might return unexpected results or errors if attempted on different data sets, and has not been tested yet on other sensors, and products of ProbaV.
 
-Please report any errors or anomalies.
+The tutorial and data availability is still under construction, so please report any errors or anomalies on the [github account](https://github.com/JornDallinga/JornDallinga.github.io) of this tutorial.
+
+### Acknowledgements
+The tutorial and related research have been done within the framework of the PROBA-V MEP project and with support and funding of the [ESA](https://proba-v-mep.esa.int/). 
 
 
 [creative commens](https://creativecommons.org/licenses/by-sa/4.0/) ![CC logo](https://i.creativecommons.org/l/by-sa/4.0/80x15.png)
