@@ -66,7 +66,7 @@ library(rasterVis)
 ```
 
 
-The ProbaV package used can be viewed [here](https://github.com/johanez/ProbaV). Many fixes, including spelling, and further updating of the package is still underway. Therefore, we download and source the fixed scripts directly using the following 'source_ttps' function from another github repository. 
+The ProbaV package used can be viewed [here](https://github.com/johanez/ProbaV). Many fixes, including spelling, and further updating of the package is still underway. Furthermore, we download and source some adjusted scripts directly using the following 'source_ttps' function from another github repository. 
 
 ```{r,echo=T, results='hide'}
 source_https <- function(url, ...) {
@@ -811,10 +811,10 @@ systime_stack <- system.time(getHarmMetricsSpatial(x = b_vrt_stack, minrows = mi
 
 Lets see if there is a difference in time! Consider that this is a small subset, but the difference in time on the machine is significant on larger data sets.
 
-```{r, echo= F}
-paste0("System time of the Virtual raster stack: ", systime_vrt)
+```{r, echo= F, hold = T}
+cat("total elapsed time of the Virtual raster stack: ", systime_vrt[3])
 
-paste0("System time of the Virtual raster stack: ", systime_stack)
+cat("total elapsed time of the raster::stack: ", systime_stack[3])
 ```
 
 
