@@ -66,7 +66,7 @@ library(rasterVis)
 ```
 
 
-The ProbaV package used can be viewed [here](https://github.com/johanez/ProbaV). Many fixes, including spelling, and further updating of the package is still underway. Furthermore, we download and source some adjusted scripts directly using the following 'source_ttps' function from another github repository. 
+The ProbaV package used can be viewed [here](https://github.com/johanez/ProbaV). Many fixes, including spelling, and further updating of the package is still underway. Furthermore, we download (and source) some adjusted scripts directly using the following 'source_ttps' function from another github repository. 
 
 ```{r,echo=T, results='hide'}
 source_https <- function(url, ...) {
@@ -254,11 +254,11 @@ detectCores(all.tests = FALSE, logical = TRUE)
 # Select the patterns to match the .tif files you wish to process.
 patterns <- c('RADIOMETRY.tif$') # or "NDVI.tif$"
 
-# similar for NDVI
-processProbaVbatch(dir_file, 
+# similar for pattern = NDVI.tif$
+processProbaVbatch2(dir_file, 
                     pattern = patterns, tiles = tiles, start_date = "2015-10-25", end_date = NULL,
                     QC_val = QC_val, outdir = outdir,
-                    ncores = (detectCores(all.tests = FALSE, logical = TRUE)-1),
+                    ncores = 5,
                     overwrite=F)
 ```
 
@@ -696,7 +696,7 @@ Lets test the probaV::getHarmMetrics function on our timeseries(z).
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
 
 # With the return_model = T, we return the harmonic model. Otherwise, it will return the coefficients (metrics)
-model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = T)
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, order = 1, return_model = T)
 
 # return model
 model_metrics
@@ -707,7 +707,7 @@ As previously explained, the number of output coefficients (metrics) depend on t
 
 ```{r, eval=T}
 # Run the getHarmMetrics function with return_model = F, so we return just the metrics
-model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = F)
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, order = 1, return_model = F)
 ```
 
 ```{r, hold = T}
@@ -715,7 +715,7 @@ model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .9
 cat("The metrics returned by the getHarmMetrics function, with order 1, are the: ", names(model_metrics))
 
 # Order 2
-model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 2)
+model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, order = 2)
 cat("The metrics returned by the getHarmMetrics function, with order 2, are the: ", names(model_metrics))
 ```
 
