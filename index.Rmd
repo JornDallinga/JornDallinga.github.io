@@ -255,10 +255,10 @@ detectCores(all.tests = FALSE, logical = TRUE)
 patterns <- c('RADIOMETRY.tif$') # or "NDVI.tif$"
 
 # similar for pattern = NDVI.tif$
-processProbaVbatch2(dir_file, 
+processProbaVbatch(dir_file, 
                     pattern = patterns, tiles = tiles, start_date = "2015-10-25", end_date = NULL,
                     QC_val = QC_val, outdir = outdir,
-                    ncores = 5,
+                    ncores = 10,
                     overwrite=F)
 ```
 
