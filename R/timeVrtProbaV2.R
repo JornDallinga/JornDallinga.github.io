@@ -33,6 +33,10 @@ timeVrtProbaV2 <- function(x, pattern, stacked_bands=NULL, vrt_name, order_chron
     if (!is.null(end_date)) df_info  <- df_info[as.numeric(df_info$date) <= end_date,]
   }
   
+  if(return_raster == F){
+    return(df_info)
+  }
+  
   cat("\n building main vrt, layers:", nrow(df_info))
   # new
   gdalUtils::gdalbuildvrt(paste(x,df_info$fpath, sep = ""), vrt_name, separate = T, overwrite = T, verbose=F, ...)

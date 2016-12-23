@@ -1,11 +1,13 @@
 processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NULL, end_date=NULL, QC_val = QC_val, fill=NULL, as.is=FALSE, outdir, ncores=1, overwrite=FALSE) {
-  #x <- l0_dir
+  
   if (!is.character(x)) {
     stop('x needs to be of class character')
   }
+  # Copy folder structure for name output
   x2 <- x
-  if(length(x) == 1) {
   
+  if(length(x) == 1) {
+    
     info <- getProbaVinfo(x, pattern=pattern, tiles = tiles)
     
     # x <- list.files(path=x, pattern=pattern, full.names=TRUE,  recursive = T, include.dirs = F, no.. = T)
@@ -13,7 +15,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
     
     df = list()
     for (i in 1:length(x)){
-      dat <- getProbaVinfo(x[i], pattern = patterns, tiles = tiles)
+      dat <- getProbaVinfo(x[i], pattern = pattern, tiles = tiles)
       df[[i]] <- dat # add it to your list
     }
     info <- do.call(rbind, df)
@@ -24,15 +26,21 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
   }
   if (!is.null(end_date) & !is.null(start_date)) {
     info <- subset(info, info$date >= start_date & info$date <= end_date)
-    
+  } else if (!is.null(end_date) & is.null(start_date)){
+    info <- subset(info, info$date <= end_date)
+  } else if (!is.null(start_date) & is.null(end_date)){
+    info <- subset(info, info$date >= start_date)
   }
   
-  info$date
-  f <- gsub("-", "", info$date)
-  gg <- subset(x2, str_sub(x2,-8,-1) %in% f)
-  
-  x <- info
-  x <- paste0(gg,'/',x$fpath)
+  # When you only insert 1 directory
+  if (length(x) == 1){
+    x <- paste0(x2,'/',info$fpath)
+  } else {
+    # When you have multiple directories following YYYYMMDD
+    f <- gsub("-", "", info$date)
+    gg <- subset(x2, str_sub(x2,-8,-1) %in% f)
+    x <- paste0(gg,'/',info$fpath)
+  }
   
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   
@@ -60,7 +68,7 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
   
   xprocessed <- foreach(i=x, o=outnames, .combine = c, .multicombine = T, .inorder = F, .packages = c("raster", "rgdal"), .verbose = T ) %dopar% {
     cat("...out:", o)
-    r <- cleanProbaV(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite )
+    r <- cleanProbaV2(i, filename=o, QC_val = QC_val, fill=fill, datatype = type, as.is = as.is, overwrite = overwrite)
     print(r)
     o
   }
@@ -74,13 +82,13 @@ processProbaVbatch2 <- function(x, pattern = patterns, tiles=NULL, start_date=NU
   }
   
   
-  # delete if files exists
-  f_exist <- subset(outnames, file.exists(outnames) == T)
-  if (length(f_exist) > 0 & pattern != "NDVI.tif$"){
-    cat("\n","deleting temp files")
-    file.remove(f_exist)
-    cat(length(f_exist), " files removed")
-  }
+  # # delete if files exists
+  # f_exist <- subset(outnames, file.exists(outnames) == T)
+  # if (length(f_exist) > 0 & pattern != "NDVI.tif$"){
+  #   cat("\n","deleting temp files")
+  #   file.remove(f_exist)
+  #   cat(length(f_exist), " files removed")
+  # }
   
   return(xprocessed)
   

@@ -17,19 +17,20 @@ tn <- 1
 probav_sm_dir <- "/userdata/sm2/"
 outdir <- file.path("/userdata/sm2")
 # create output name on the metrics
-out_name <- file.path("/home/JD/R_Projects/JornDallinga.github.io", paste0("rsdata/probav/metrics/",tiles[tn],"_harm_lm2_loess_03_scaled1.envi"))
+dir.create("/userdata/metricsJD", showWarnings = F)
+out_name <- file.path("/userdata/metricsJD", paste0(tiles,"_harm_lm2_loess_03_scaled_Full.envi"))
 
 bands_select <- '(BLUE|SWIR|NDVI)' 
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
-xmin <- -2.064549  
-xmax <- -1.074974 
-ymin <- 8.840184
-ymax <- 10.39336
+#xmin <- -6.681394  
+#xmax <- -5.022823 
+#ymin <- 12.63588 
+#ymax <- 14.96029
 
-mc.cores <- 3
-minrows <- 5
+mc.cores <- 10
+minrows <- 10
 logfile <- file.path("/home/JD/R_Projects/JornDallinga.github.io", paste0("rsdata/probav/logs/", tiles, ".log"))
 rasterOptions(todisk = F,
               tmpdir = file.path("/userdata/temp", collapse =""))
@@ -47,4 +48,4 @@ b_metrics <- getHarmMetricsSpatial(x = b_vrt, minrows = minrows, mc.cores = mc.c
                                    overwrite=T, span=0.3,
                                    cf_bands = c(1,2), thresholds=c(-80, Inf, -120, 120),
                                    filename = out_name, df_probav_sm = df_probav_sm, 
-                                   order = 1, datatype="INT2S", scale_f = c(10,100,10))
+                                   order = 2, datatype="INT2S", scale_f = c(10,100,10))
