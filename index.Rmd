@@ -2,7 +2,7 @@
 title: "ProbaV"
 author: "Jorn Dallinga, ProbaV package used from Johannes Eberenz"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-Version: "1.0 (updated 9-12)"
+Version: "1.0 (updated 23-12)"
 output:
   knitrBootstrap::bootstrap_document:
     title: "ProbaV" 
@@ -22,17 +22,17 @@ knitr::opts_knit$set(root.dir = getwd())
 
 ## Introduction
 
-the ProbaV instrument
+'the ProbaV instrument
 
 ESA is currently preparing the launch of the Sentinel-3 satellites, of which the first one (Sentinel-3A) is foreseen for September 29tn, 2015. The Sentinel missions are developed for the operational needs in land, ocean, and atmospheric monitoring within the European Copernicus programme. However, between the end-of-life of SPOT-VGT and the launch of the Sentinel-3 satellites, a rather large time gap of about 3 years would occur, which would imply a discontinuation of the vegetation monitoring time series.
 
 In order to preserve this observational continuity, Belgium decided to build a small satellite mission based on the successful ESA PROBA expertise, using state-of-the-art-technology. ProbaV (with "V" standing for Vegetation) was designed by a full Belgian consortium, fulfills all of the vegetation users specifications and is complement to the Sentinel-3 satellites to be launched after ProbaV.
 
-ProbaV has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products,  available at 100 m, 300 m, and 1 km. The products can be downloaded from [vito](www.vito-eodata.be). [source quoted directly](http://ProbaV.vgt.vito.be/) 
+ProbaV has a constellation of 3 cameras that daily observe the land surface and vegetation at similar spectral wavelengths (BLUE, RED, NIR, and SWIR) as SPOT-VGT, but with an improved spatial resolution (300 m and 100 m for the centre camera). These observations are processed into daily and 10-daily syntheses products,  available at 100 m, 300 m, and 1 km. The products can be downloaded from [vito](www.vito-eodata.be)'. [source](http://ProbaV.vgt.vito.be/) 
 
 ## Preperation
 
-This script has been tested and runs on a LINUX Centos machine located on the ESA cloud toolbox, but might require some tweaking if used on other OS or versions. Most functions are designed to run parallel on multi-core machines, such as the cloud toolbox. Al though this example script uses a small case study throughout the tutorial, when extending the functions to larger areas, system time could become significantly slower (depending on how many cores you have to your disposal).
+This script has been tested and runs on a LINUX Centos machine located on the Mission Exploitation Platform (MEP) from ESA, but might require some tweaking if used on other OS or versions. For more information on the MEP, please follow this [link](https://proba-v-mep.esa.int/node/12). Most functions are designed to run parallel on multi-core machines, such as on the MEP. This example script uses a small case study throughout the tutorial. However, when extending the functions to larger areas, system time could become significantly longer due to slower processing (depending on your computational power at your disposal).
 
 System on which the script has been tested:
 ```{r, echo=F, results= 'hold'}
@@ -41,10 +41,11 @@ Sys.info()['sysname']
 version$os
 ```
 
-The data used within these scripts can be downloaded from the [vito](http://ProbaV.vgt.vito.be/) website. Lets start with loading the required libraries and packages to illustrate a workflow on working with the ProbaV data. Additionally, we have to set the library path if this has not been set previously. When working from the cloud toolbox, errors could occur with loading packages when the library path has not been added.
+The data used within these scripts can be downloaded from the [vito](http://ProbaV.vgt.vito.be/) website. Lets start with loading the required libraries and packages to illustrate a workflow on working with the ProbaV data. Additionally, we have to set the library path if this has not been set previously (This could depend on your MEP machine settings). When working from the MEP, (occasional) errors could occur with loading packages when the library path has not been added.
 
 ```{r, message=F, warning=F}
 # add additional libary path
+# Depends on which R version you work with
 .libPaths( c( .libPaths(), "~/R/x86_64-redhat-linux-gnu-library/3.2") )
 
 ## libaries
@@ -85,9 +86,9 @@ source_https("https://raw.githubusercontent.com/JornDallinga/ProbaV_JD/master/R/
 
 Lets start with the preprocessing of the data. The following sections of the tutorial only work by following the ProbaV directory structure on the ProbaV MEP. The files should be stored in the folder structure used by vito (One folder per date, in YYYYMMDD format, which contains files for all tiles).
 
-The ProbaV has 3 synthesis products, S1 (daily observations), S5 (mosaic-ed 5 day observation) and S10 (mosaic-ed 10 day observation). In the case of a 10-day synthesis product, the product has a minimum effect of cloud cover, resulting from selection of cloud-free acquisitions during the 10-day period. Additionally, their are two products among these daily products available, the Top of Atmosphere (TOA) and Top of Canopy (TOC). The TOC is atmospheric corrected product, and in combination with the S5 synthesis, is the data we are going to use in this tutorial.
+The ProbaV has 3 synthesis products, S1 (daily observations), S5 (mosaic-ed 5 day observation) and S10 (mosaic-ed 10 day observation). In the case of a 10-day synthesis product, the product has a minimum effect of cloud cover, resulting from selection of cloud-free acquisitions during the 10-day period. Additionally, their are two products among these daily products available, the Top of Atmosphere (TOA) and Top of Canopy (TOC). The TOC is the atmospheric corrected product, and in combination with the S5 synthesis, is the data we are going to use in this tutorial.
 
-Below the data location of my ProbaV data (l0_dir), and where I intend to store my new data sets (outdir)
+Below the data location of my ProbaV data (l0_dir), and where I intend to store my new data sets (outdir).
 
 ```{r, echo=F}
 # set your data path in which you have the .tiff files of ProbaV data
@@ -183,7 +184,7 @@ print(paste('The Quality control value: ',QC_val), sep = "")
 
 On the ProbaV-MEP VM, both NDVI and RADIOMETRY .tif files should be stored within the same folder. This can be observed by checking the folder location from which you read your ProbaV data (here 'l0_dir'). 
 
-The Radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI bands. However, the function will extract all the bands that the Radiometry brick contains, including the Red and NIR band. This allows you to play around with more band selections. 
+The radiometry brick contains 4 raster layers. Lets split the radiometry brick into single .tif layers (SWIR, NIR, RED, BLUE). You can select which tiles you would like to process. In this workflow, we are going to work with 3 bands, the Blue, SWIR and NDVI (NDVI is not part of the radiometry brick) bands. However, the function will extract all the bands that the radiometry brick contains, including the Red and NIR band. This allows you to play around with more band selections. 
 
 NOTE: If you wish to work with different bands than within this tutorial, it might require some function tweaking. Feel free to adjust the functions accordingly on the github account (see bottom site). 
 
@@ -208,7 +209,9 @@ Lets have a 'glimpse of our data'. The glimpse function shows the metadata of ou
 ```{r}
 # lets get a glimpse of the currently available data in our selection of patterns and tiles.
 glimpse(df)
+```
 
+```{r, echo=F}
 # How many radiometry bands do we have of the assigned tiles?
 print(paste("We currently have ",nrow(df), " radiometry bands", sep = ""))
 ```
@@ -218,9 +221,11 @@ Next step is to keep the quality control values in the data which correspond to 
 
 ```{r}
 # Assign variable from the download location of your Geotiffs. Lets use the NDVI.
+# Read a file name from your directory (l0_dir). We will use the tile 'X17Y06' at January 16th, 2016. 
 r <- paste(l0_dir, "/20160116/PROBAV_S5_TOC_20160116_100M_V001/PROBAV_S5_TOC_X17Y06_20160116_100M_V001_NDVI.tif", sep = "")
 
 # Assign a file.path (including filename) to which we will write the cleaned data.
+# Read a file name from your output directory (outdir), following the same date and tile as above.
 filename <- paste(outdir,"/PROBAV_S5_TOC_X17Y06_20160116_100M_V001_NDVI_sm.tif", sep = "")
 ```
 ```{r, eval=F}
@@ -240,7 +245,7 @@ par(mfrow = c(1, 1))
 
 ## Proccessing a ProbaV batch
 
-The processProbaVbatch function uses the cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. In order to process both the Radiometry and the NDVI data sets, we will have to run the processProbaVbatch function twice, with different patterns.
+The probaV::processProbaVbatch function uses the probaV::cleanProbaV function on a whole 'batch' of data. The starting date parameter helps selecting at which starting point you wish clean the data. The function uses parallel processing, which is useful when the machine has multiple processors or/and cores. The processing time of the following functions thus depend on the process capacity of your machine. In order to process both the radiometry and the NDVI data sets, we will have to run the probaV::processProbaVbatch function twice, with different patterns.
 
 ```{r, eval=F}
 # How many cores do we have:
@@ -268,7 +273,7 @@ tiles <- c("X17Y06") #e.g. c("X17Y06","X18Y06")
 ```
 
 
-Lets use the getProbaVinfo function again to visualize a certain tile data that we have.
+Lets use the probaV::getProbaVinfo function again to visualize a certain tile data that we have.
 
 ```{r}
 # set directory of the processed files as a result of the processProbaVbatch function
@@ -345,8 +350,10 @@ The virtual raster function within the ProbaV package can create two outputs, a 
 As can be observed from the dataframe output (df_ProbaV_sm), we get to retrieve the metadata of our selection. 
 
 ```{r}
+# Returns a raster (return_raster = T)
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21")
-  
+
+# Returns a dataframe (return_raster = F)  
 df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2015-10-21", end_date = "2015-10-21")
 ```
 
@@ -379,7 +386,7 @@ and SWIR bands is no longer valid for ProbaV, due to the observation time differ
 
 In addition to the added cloud/shadow algorithm applied on the ProbaV products, the ProbaV R package adds an additional cloud filter which requires some manual interpretation. The following section will visualize the difference between the cloud/shadow algorithm from ProbaV and the created cloud filter function in the ProbaV R package.
 
-We will start of with a false color image of our subset area previous defined by the extent function. We will simply use all bands available. In order to create a false color image, we will have to rerun our ProccesProbaVbatch without filtering the cloud/shadow pixels.
+We will start of with a false color image of our subset area previous defined by the extent function. We will simply use all bands available. In order to create a false color image, we will have to rerun our probaV::ProccesProbaVbatch without filtering the cloud/shadow pixels.
 
 ```{r}
 # Select all the bands for a false color image from the RADIOMETRY stack
@@ -410,7 +417,7 @@ processProbaVbatch(l0_dir1,
 ```
 
 
-Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. Set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (lat/lon, WGS84)
+Rerun the virtual stack function on our newly created directory with unfiltered data. Since we are working with a specific start and end date to visualize a false color image on a fixed time, we adjust our start and end date accordingly. We also set a smaller extent for this tutorial. The smaller the extent (region of interest), the faster the processing. We set the following extent by assigning the x and y coordinates accordingly (lat/lon, WGS84).
 
 ```{r}
 # set extent
@@ -419,13 +426,14 @@ xmax <- -1.074974
 ymin <- 8.840184
 ymax <- 10.39336
 
-# select directory with clouds
+# select directory with clouds (cloud_dir)
 ProbaV_cloud_dir <- paste(getwd(),'/',cloud_dir,'/', sep = "")
 
 # create virtual raster output name
 vrt_name <- file.path(outdir, paste0(tiles, "_",paste0(bands, collapse = "_"), ".vrt"))
 
 # load the image in our virtual raster stack
+# Adding the parameter 'te' allows you to crop the selected images to a user defined extent.
 b_vrt_cloud <- timeVrtProbaV(ProbaV_cloud_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2015-10-21", end_date = "2015-10-21", te = c(xmin,ymin,xmax,ymax))
 
 # plot a false color image
@@ -474,11 +482,11 @@ par(mfrow=c(1,1))
 ```
 
 
-Looks good! The orange area here visualizes the clouds/shadow and bad pixels detected by the cloud detection algorithm within ProbaV. If you look closely, you can still observe cloud and shadow remnants, mostly near the orange masked clouds. Al tough this original cloud detection algorithm already masked out almost all clouds, we would like to clear as many clouds (and shadow) as possible, so we have a clear reflectance of the pixels. Because remaining clouds in Remote sensing time-series can impair the extraction of seasonal information. 
+Looks good! The orange area here visualizes the clouds/shadow and bad pixels detected by the cloud detection algorithm within ProbaV. If you look closely, you can still observe cloud and shadow remnants, mostly near the orange masked clouds. Although this original cloud detection algorithm already masked out almost all clouds, we would like to clear as many clouds (and shadow) as possible, so we have a clear reflectance of the pixels. Because remaining clouds in remote sensing time-series can impair the extraction of seasonal information. 
 
-Lets apply the additional cloud filter! In this example we use the blue band to detect additional cloud and shadow remnants in the landscape. The BlUE and SWIR bands are conventionally sensitive in cloud detection. For our final classification, in the section *Spatial Harmonic Metrics*, we will use both BLUE and SWIR for additional cloud detection and removal. 
+Lets apply the additional cloud filter! In this example we use the blue band to detect additional cloud and shadow remnants in the landscape. The BlUE and SWIR bands are conventionally sensitive in cloud detection. For our final classification, in the section **Spatial Harmonic Metrics**, we will use both BLUE and SWIR for additional cloud detection and removal. 
 
-The cloud_filter function applies the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) through the 'ProbaV::smoothloess' function. Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. The threshold values are determined visually, and might require testing to select the optional parameters for cloud detection. If you wish to tutorial on different eco-regions, be sure test different thresholds for cloud/shadow detection.  The span parameter controls the degree of smoothing. A higher span smooths out the fit more, while a lower span captures more trends but introduces statistical noise if there is too little data (We will test this later). 
+The cloud_filter function applies the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) through the 'ProbaV::smoothloess' function. Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. The threshold values are determined visually, and might require testing to select the optional parameters for cloud detection. If you wish to apply the tutorial on different (eco-)regions, be sure test different thresholds for cloud/shadow detection. The span parameter controls the degree of smoothing. A higher span smooths out the fit more, while a lower span captures more trends but introduces statistical noise if there is too little data (We will test this later). 
 
 
 ```{r}
@@ -497,10 +505,10 @@ out_name <- paste('/userdata/cloud_filter/cloud_filter.envi', sep = "")
 ```
 
 
-The 'cloud_filter' function is an intensive computational and disk volume demanding function, as it returns all the .tif files (as brick) within you date selection. However, since we select a subset by setting an extent in the 'timeVrtProbaV' function, the output files should not be that big in volume. The 'cloud_filter' is not part of the 'ProbaV' package, but is derived from it. The threshold parameters are similar to existing functions within the 'ProbaV' package. Where:
+The 'cloud\_filter' function is an intensive computational and disk volume demanding function, as it returns all the .tif files (as brick) within you 'date' selection. However, since we select a subset by setting an extent in the 'probaV::timeVrtProbaV' function, the output files should not be that big in volume. The 'cloud_filter' is not part of the 'ProbaV' package, but is derived from it. The threshold parameters are similar to existing functions within the 'ProbaV' package. Where:
 
   - x = Virtual stack of .tif files
-  - ProbaV_sm_dir: Directory containing the processed ProbaV bands as a result of the 'ProcessProbaVBatch'
+  - ProbaV\_sm_dir: Directory containing the processed ProbaV bands as a result of the 'ProcessProbaVBatch'
   - pattern: Band selection including the _sm (state mask)
   - tiles: tile to process
   - minrows: See section on 'setting parameters'
@@ -602,10 +610,11 @@ bands_select <- '(NDVI)'
 bands_sel <- paste(bands_select,'_sm.tif$', sep = "")
 vrt_name <- file.path(paste0(outdir,"/",tiles, "_",paste0(bands_select, collapse = "_"), ".vrt"))
 
-# Select all dates of the blue band
+# Select all dates of the blue band and return it as a raster.
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 # Select random pixel of our raster stack
+set.seed(42)
 z <- zoo(c(b_vrt[runif(1, 0, ncell(b_vrt))]), as.Date(getZ(b_vrt), "%Y%j"))
 
 # read and assign the acquisition dates to a variable (df_ProbaV_sm). Notice that the return_raster variable is set to 'False', and will thus return a dataframe with metadata on the selected dates.
@@ -616,10 +625,11 @@ df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt
 
 Lets apply the smoothLoess function. This function requires a time series [ts](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html) object. We create one using the [zoo](https://cran.r-project.org/web/packages/zoo/index.html) package. The smoothLoess function uses local polynomial regression fitting, by using the [loess](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html) function. The smoothLoess function requires the dates to match with the index values, hence we retrieved the matching dates above. 
 
-*Smoothloess function*
+**Smoothloess function**
+
 Observations where difference to the LOESS model exceeds a threshold are masked as clouds or cloud shadow. The 'ProbaV::smoothloess' function applies a smoothing approach, by fitting a locally weighted scatterplot smoothing model. We used this function before in the cloudfilter section of this tutorial. The span parameter controls the degree of smoothing. The higher the span value, the higher the smoothing of a time series object. 
 
-The parameters of the 'LOESS' model and the thresholds were chosen based on expert knowledge and visual comparison of the results within the semi-arid region of Africa. These parameters could thus change if you select a different eco-regional area, and may require testing and comparing results for optimal parameter selection.
+The parameters of the 'LOESS' model and the thresholds were chosen based on expert knowledge and visual comparison of the results within the semi-arid region of Africa. These parameters could thus change if you select a different (eco-)regional area, and may require testing and comparing results for optimal parameter selection.
 
 ```{r}
 # use smoothloes to create time series
@@ -643,20 +653,51 @@ plot(f, main = "plotting time series.
      filled = the result of smoothing from the polynomial regression loess model", xlab = "Dates index")
 ```
 
+As can be observed above, smoothing the model by setting a (too) high span value can smooth out vegetation trends which might be important for your classification later on. Altough we plot the 'filled' values here as well, they are not used in the final models. Filling gaps between time observations based on linear models can create a false interpretation of vegetation trends, especially when the time between observations is large (e.g. months). 
 
 ## Harmonic metrics
 
-We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a linear harmonic model to the time series. The coefficients of this linear model are then returned as metrics (such as min,max values) and seasonality (cos, sin, trend). Here the dates represent the frequency within the harmonic seasonal model. The Cosine (cos) and Sine (sin) represent the amplitude and phase shift, respectively. Second or Third order harmonics will  create an additional output of the Cosine and Sine multiplied the selected order. Higher order harmonics will be added to the lower order harmonics.
+We use a seasonal model approach and descriptive statistics. Per band and pixel i we derive median and percentiles and fit a linear harmonic model to the time series. The coefficients of this linear model are then returned as metrics (such as min,max values) and seasonality (cos, sin, trend). Here the dates represent the frequency within the harmonic seasonal model. The Cosine (cos) and Sine (sin) reflect the amplitude and phase shift, respectively, but cannot be interpreted as such directly from the cos and sin.
 
-The significance parameter allows you to control the metrics p-values, and which to keep, within the harmonic model. Thus, if this parameter is set, metrics with a p-value > significance will be set to '0'. By doing so, we only bring metrics that differ significantly from each other into the next functions.
+Second or Third order harmonics will create an additional output of the Cosine and Sine multiplied the selected order. Higher order harmonics will be added to the lower order harmonics.
 
-QC-good parameter ensures that reflectance values that are missing (0 or not 1) are omitted. Also reflectance values that are marked as clouds/shadow by the 'smoothLoess' function (value 2 in QC-good) will thus be ignored by the linear model.
+----------------------------------------------------------------------------------------
 
+Lets show the formula used to calculate the 'cos' and 'sin' values. 
+
+  k <- (2\*pi)
+  
+  cos <- cos(dates\*k)
+  sin <- sin(dates\*k)
+  
+  **formula <- x ~ (co + si) # Here x is an observation through time**
+  
+  with higher order harmonics, the formula is adjusted by multiplying the cos and sin with the order:
+  
+  e.g. when order = 2. 
+  
+  co2 <- cos(2\*dates\*k)
+  si2 <- sin(2\*dates\*k)
+  
+  These additional coefficients (co2 and si2) will be added to the formula:
+  
+  **formula <- x ~ co + si + co2 + si2**
+  
+----------------------------------------------------------------------------------------
+
+The probaV package currently supports the required 'harmonic order' of atleast 1 to up to 3. 
+
+QC-good parameter ensures that reflectance values that are missing (0 or not 1) are omitted (the fitted values are thus **not** used). Reflectance values that are marked as clouds/shadow by the 'probaV::smoothLoess' function (value 2 in QC-good) will be ignored by the linear model.
+
+Lets test the probaV::getHarmMetrics function on our timeseries(z).
 
 ```{r,eval=T}
+# Run the smoothloess function on timeseries (z)
 f <- smoothLoess(tsx = z, QC_good=NULL, dates=dates , res_type=c("all"), span=0.3)
+
 # With the return_model = T, we return the harmonic model. Otherwise, it will return the coefficients (metrics)
 model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = T)
+
 # return model
 model_metrics
 ```
@@ -667,7 +708,9 @@ As previously explained, the number of output coefficients (metrics) depend on t
 ```{r, eval=T}
 # Run the getHarmMetrics function with return_model = F, so we return just the metrics
 model_metrics <- getHarmMetrics(f$x,QC_good = f$QC_good ,dates = dates, sig = .95, order = 1, return_model = F)
+```
 
+```{r, hold = T}
 # Order 1
 cat("The metrics returned by the getHarmMetrics function, with order 1, are the: ", names(model_metrics))
 
@@ -679,7 +722,7 @@ cat("The metrics returned by the getHarmMetrics function, with order 2, are the:
 
 ## Spatial Harmonic Metrics
 
-The following function runs the getHarmMetrics to our virtual raster brick and returns the model coefficients. Each coefficient is thus returned as a raster layer, where the output number of rasterlayers depend on the 'order' that you assigned. 
+The following function runs the probaV::getHarmMetrics to our virtual raster brick and returns the model coefficients. Each coefficient is thus returned as a raster layer, where the output number of rasterlayers depend on the 'order' that you assigned. 
 
 Lets start of with setting the required variables for the function parameters. 
 
@@ -702,7 +745,7 @@ dates <-  df_ProbaV_sm[df_ProbaV_sm$band == bands[1], 'date']
 ```
 
 
-Check layers, bands, blocks and cores! Each block represents the number of rows that the 'getHarmMetricsSpatial' function applies to. This speeds up the calculation time significantly. As normally the linear model of getHarmMetrics would be calculated to each cell of a rasterbrick, it now applies the function simultaneously to 15 (or n minrows) rows in parallel. 
+Check layers, bands, blocks and cores! Each block represents the number of rows that the 'probaV::getHarmMetricsSpatial' function applies to. This speeds up the calculation time significantly. As normally the linear model of getHarmMetrics would be calculated to each cell of a rasterbrick, it now applies the function simultaneously to 15 (or n minrows) rows in parallel. 
 
 ```{r,eval=T}
 # --- get metrics ---  #
@@ -712,11 +755,11 @@ cat(sprintf("\nlayers: %i  | bands: %s  | blocks: %i  | cores: %i\n",
 ```
 
 
-Now lets try out the getHarmMetricsSpatial function! Most of the functions parameters must be familiar by now. The cf-bands (cloud_free bands) is the coerced selection of the bands to which you would like to apply the cloud filter. My 'bands-select' variable is set to 3 bands, the BLUE, SWIR and NDVI. By setting the cf-bands to c(1,2), I apply the additional cloud filter to band 1 and 2 from my selected bands, in this scenario the BLUE and SWIR. The thresholds follow a similar process, where the given thresholds below apply to the first 2 bands. Each 2 values represent the min and max of your selected threshold, which are the min/max values to detect additional clouds/shadow. 
+Now lets try out the probaV::getHarmMetricsSpatial function! Most of the functions parameters must be familiar by now. The cf-bands (cloud_free bands) is the coerced selection of the bands to which you would like to apply the cloud filter. My 'bands-select' variable is set to 3 bands, the BLUE, SWIR and NDVI. By setting the cf-bands to c(1,2), I apply the additional cloud filter to band 1 and 2 from my selected bands, in this scenario the BLUE and SWIR. The thresholds follow a similar process, where the given thresholds below apply to the first 2 bands. Each 2 values represent the min and max of your selected threshold, which are the min/max values to detect additional clouds/shadow. 
 
-The getHarmMetricsSpatial is basically an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. Depending on your selected region of interest in the timeVrtProbaV2 function and your available cores/memory. The function also allows you to scale up your values, allowing you to switch from float to integers, reducing storage/memory use. This function still has some limitations, as the parameters 'robust' and 'n_years' might throw errors as these have not been efficiently tested yet. 
+The probaV::getHarmMetricsSpatial is basically an 'all in one' function of the previous sections, applying the cloud filter to a region of interest using your selected band. The computation time depends on your selected region of interest and your available cores/memory. The function also allows you to scale up your values, allowing you to switch from float to integers, reducing storage/memory use. This function still has some limitations, as the parameters 'robust' and 'n_years' might throw errors as these have not been efficiently tested yet. 
 
-There are currently two functions within the ProbaV package that are able to stack all the requested time series from your selection. The 'timeVrtProbaV' and the 'timeStackProbaV'. The 'timeStackProbaV' will use the more conventional stacking from raster::stack, whereas the 'timeVrtProbaV' will use the gdalbuildvrt (from GDAL) function, to build a virtual raster stack. The 'timeVrtProbaV' requires you to set your extent within the function call (te parameter), whereas the 'timeStackProbaV' has to be cropped after stacking. 
+There are currently two functions within the ProbaV package that are able to stack all the requested time series from your selection. The 'probaV::timeVrtProbaV' and the 'probaV::timeStackProbaV'. The 'probaV::timeStackProbaV' will use the more conventional stacking from raster::stack, whereas the 'probaV::timeVrtProbaV' will use the gdalbuildvrt (from GDAL) function, to build a virtual raster stack. The 'probaV::timeVrtProbaV' requires you to set your extent within the function call ('te' parameter), whereas the 'probaV::timeStackProbaV' has to be **cropped** after stacking. 
 
 ```{r, eval=T, results= 'hide', message='FALSE'}
 # set small subset
@@ -726,7 +769,7 @@ ymin <- 9.845443
 ymax <- 9.864962 
 e <- extent(xmin,xmax,ymin,ymax)
 
-# Create virtual stack
+# Create virtual stack (using probaV::timeVrtProbaV)
 b_vrt <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles, return_raster = T, start_date = "2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 
 # Create a raster brick using the raster::stack function
@@ -735,6 +778,7 @@ b_vrt_stack <- timeStackProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vr
 # crop stack to extent
 b_vrt_stack <- crop(b_vrt_stack,e)
 
+# Return dataframe of our selected metadata.
 df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt_name, tile = tiles[1], return_raster = F, start_date ="2014-01-21", end_date = "2016-09-01", te = c(xmin, ymin, xmax, ymax))
 ```
 
@@ -767,14 +811,14 @@ systime_stack <- system.time(getHarmMetricsSpatial(x = b_vrt_stack, minrows = mi
 
 Lets see if there is a difference in time! Consider that this is a small subset, but the difference in time on the machine is significant on larger data sets.
 
-```{r, echo= FALSE}
-cat("System time of the Virtual raster stack: ", systime_vrt)
+```{r, echo= F}
+paste0("System time of the Virtual raster stack: ", systime_vrt)
 
-cat("System time of the Virtual raster stack: ", systime_stack)
+paste0("System time of the Virtual raster stack: ", systime_stack)
 ```
 
 
-Now, lets apply the function on a larger extent. Depending on your available cores and RAM, this function could take some time! I strongly suggest to use a small subset area to test the function on, instead of a whole tile or multiple tiles.
+Now, lets apply the function on a larger extent. Depending on your available cores and RAM, this function could take some time! I strongly suggest to use a small subset area to test the function on, instead of a whole tile (or multiple tiles).
 
 ```{r}
 # set sub-extent
@@ -797,7 +841,7 @@ df_ProbaV_sm <- timeVrtProbaV(ProbaV_sm_dir, pattern = bands_sel, vrt_name = vrt
 ```
 
 
-So, time to grab something to eat or a coffee! Remember, this function still has some limitations, as the parameters 'robust' and 'n_years' might throw errors as these have not been efficiently tested yet. 
+So, time to grab something to eat or a coffee! Remember, this function still has some limitations, as the parameters 'robust' and 'n_years' might throw errors as these have not been efficiently tested yet. If the function throws additional errors, be sure to try and tweak down the minrows and mc.cores.
 
 ```{r, eval=F, results= 'hide'}
 b_metrics <- getHarmMetricsSpatial(x = b_vrt, minrows = 5, mc.cores = 5,
@@ -811,11 +855,11 @@ b_metrics <- getHarmMetricsSpatial(x = b_vrt, minrows = 5, mc.cores = 5,
 
 ## Plot the metrics
 
-Once the function has successfully passed, we can see the output! The output is a brick of rasters that store the model coefficients (or metrics) applied in the getHarmMetricsSpatial function. Thus, the amount of bands returned (as raster layers) depends on the chosen 'order' in the getHarmMetricsSpatial. Due to the parallelization of the function, the names of the output (brick) get lost, and the chronological order with it. 
+Once the function has successfully passed, we can see the output! The output is a brick of rasters that store the model coefficients (or metrics) applied in the probaV::getHarmMetricsSpatial function. Thus, the amount of bands returned (as raster layers) depends on the chosen 'order' in the probaV::getHarmMetricsSpatial. Due to the parallelization of the function, the names of the output (brick) get lost, and the chronological order along with it. 
 
-Since the getHarmMetricsSpatial function uses the getHarmMetrics function, but applies it to a raster, we can see the names of the metrics by evaluating our previously getHarmMetrics section. 
+Since the probaV::getHarmMetricsSpatial function uses the probaV::getHarmMetrics function, but applies it to a raster, we can see the names of the metrics by evaluating our previously probaV::getHarmMetrics section. 
 
-Lets plot the first 6 layers from the created metrics brick. As can be observed, the names are lost of the bands, and the raster values have been scaled by the selected 'scale_f' parameter in the getHarmMetricsSpatial function. 
+Lets plot the first 6 layers from the created metrics brick. As can be observed, the names are lost of the bands, and the raster values have been scaled by the selected 'scale_f' parameter in the probaV::getHarmMetricsSpatial function. 
 
 ```{r,eval=T}
 # metrics info
@@ -924,12 +968,10 @@ table(df_model_JD$LC[cc])
 
 "Ranger is a fast implementation of random forest (Breiman 2001) or recursive partitioning, particularly suited for high dimensional data. Classification, regression, probability estimation and survival forests are supported. Classification and regression forests are implemented as in the original Random Forest (Breiman 2001), survival forests as in Random Survival Forests (Ishwaran et al. 2008). For probability estimation forests see Malley et al. (2012)." [source](https://github.com/imbs-hl/ranger).
 
-The following block runs the ranger function on our training data (df_model_JD) and writes the output ranger model to a RDS file.
+The following block runs the ranger function on our training data (df\\_model_JD) and writes the output ranger model to a RDS file.
 
 ```{r,eval=T}
 # run ranger on Land cover classification
-cat("------- ranger ---------")
-
 # exclude the first 4 columns of the df_model_JD by df_model_JD[cc, -(1:4)]
 ra_JD <- ranger(LC ~ ., df_model_JD[cc, -(1:4)], num.trees=500, write.forest=T,
                   probability = F, num.threads=10, verbose=T, importance = "impurity")
@@ -942,7 +984,7 @@ print(ra_JD)
 ```
 
 
-Now the final step of this tutorial! Here we run the mcPredictSpatial function that classifies our metrics based on the ranger model we created. We read back our created ranger model from the directory. 
+Now the final step of this tutorial! Here we run the probaV::mcPredictSpatial function that classifies our metrics based on the ranger model we created. We read back our created ranger model from the directory. 
 
 ```{r, eval=T, message=FALSE}
 # ------------- predict -------------------------------------------
@@ -983,8 +1025,9 @@ rat <- levels(r)[[1]]
 rat[["landcover"]] <- levels(ra_JD$predictions) # double check this
 levels(r) <- rat
 
-# add/change colours if you have more legend items
-my_col = c('yellow','darkgreen','lightgreen')
+# add/change colours if you have more legend items. The colours should be defined in the order as given by the 'rat' variable. 
+rat # # The first row of 'rat' (bare) equals the first colour below (chocolate4).
+my_col = c('chocolate4','darkgreen','yellowgreen')
 
 # Plot
 levelplot(r, col.regions=my_col, xlab="", ylab="")
@@ -1004,7 +1047,8 @@ rat <- levels(rr)[[1]]
 rat[["landcover"]] <- levels(ra_JD$predictions) # double check this
 levels(rr) <- rat
 
-# add/change colours if you have more legend items
+# add/change colours if you have more legend items. The colours should be defined in the order as given by the 'rat' variable. 
+rat # The first row of 'rat' (bare) equals the first colour below (chocolate4).
 my_col = c('chocolate4','yellow','darkgreen','green','yellowgreen')
 
 # reload the reference data
@@ -1037,14 +1081,14 @@ levelplot(rr, col.regions=my_col, xlab="", ylab="")
 ```
 
 
-Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. The approach is less suited to distinguish ice clouds from snow/ice! 
+Congrats! Now have fun applying this tutorial on your region of interest! Keep in mind that there are several limitations on the cloud filter section. The discussed approach is less suited to distinguish ice clouds from snow/ice! 
 
 This tutorial has been tested on the S5 (5-day) 100m resolution product of ProbaV. It might return unexpected results or errors if attempted on different data sets, and has not been tested yet on other sensors, and products of ProbaV.
 
-The tutorial and data availability is still under construction, so please report any errors or anomalies on the [github account](https://github.com/JornDallinga/JornDallinga.github.io) of this tutorial.
+The tutorial and data availability is still under construction, so please report any errors or anomalies on the [github account](https://github.com/JornDallinga/JornDallinga.github.io) of this tutorial or directly on the [probaV package](https://github.com/johanez/probaV).
 
 ### Acknowledgements
-The tutorial and related research have been done within the framework of the PROBA-V MEP project and with support and funding of the [ESA](https://proba-v-mep.esa.int/). 
+The tutorial and related research activities have been done within the framework of the PROBA-V MEP project and with support and funding of the [ESA](https://proba-v-mep.esa.int/).
 
 
 [creative commens](https://creativecommons.org/licenses/by-sa/4.0/) ![CC logo](https://i.creativecommons.org/l/by-sa/4.0/80x15.png)
