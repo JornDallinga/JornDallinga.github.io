@@ -256,9 +256,9 @@ patterns <- c('RADIOMETRY.tif$') # or "NDVI.tif$"
 
 # similar for pattern = NDVI.tif$
 processProbaVbatch(dir_file, 
-                    pattern = patterns, tiles = tiles, start_date = "2015-10-25", end_date = NULL,
+                    pattern = patterns, tiles = tiles, start_date = "2015-10-21", end_date = NULL,
                     QC_val = QC_val, outdir = outdir,
-                    ncores = 10,
+                    ncores = 5,
                     overwrite=F)
 ```
 
